@@ -29,7 +29,13 @@ export default function Dashboard() {
       }
 
       const data = await response.json()
-      setAvailableSlots(data.slots || [])
+      // Convert ISO strings to Date objects
+      const slotsWithDates = (data.slots || []).map((slot: any) => ({
+        ...slot,
+        start: new Date(slot.start),
+        end: new Date(slot.end)
+      }))
+      setAvailableSlots(slotsWithDates)
       
       if (data.slots.length === 0) {
         setMessage({ type: 'error', text: 'No available time slots found. Try adjusting your preferences.' })
@@ -43,7 +49,10 @@ export default function Dashboard() {
   }
 
   const scheduleWorkout = async (slot: TimeSlot) => {
-    setScheduling(slot.start.toISOString())
+    const startDate = new Date(slot.start)
+    const endDate = new Date(slot.end)
+    
+    setScheduling(startDate.toISOString())
     setMessage(null)
     
     try {
@@ -53,8 +62,8 @@ export default function Dashboard() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          start: slot.start.toISOString(),
-          end: slot.end.toISOString(),
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
           duration: slot.duration,
         }),
       })
@@ -63,10 +72,10 @@ export default function Dashboard() {
         throw new Error('Failed to schedule workout')
       }
 
-      setMessage({ type: 'success', text: `Workout scheduled for ${slot.start.toLocaleDateString()} at ${slot.start.toLocaleTimeString()}` })
+      setMessage({ type: 'success', text: `Workout scheduled for ${startDate.toLocaleDateString()} at ${startDate.toLocaleTimeString()}` })
       
       // Remove the scheduled slot from the list
-      setAvailableSlots(prev => prev.filter(s => s.start.getTime() !== slot.start.getTime()))
+      setAvailableSlots(prev => prev.filter(s => new Date(s.start).getTime() !== startDate.getTime()))
     } catch (error) {
       console.error('Error scheduling workout:', error)
       setMessage({ type: 'error', text: 'Failed to schedule workout. Please try again.' })
@@ -75,12 +84,14 @@ export default function Dashboard() {
     }
   }
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const formatTime = (date: Date | string) => {
+    const dateObj = new Date(date)
+    return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString([], { 
+  const formatDate = (date: Date | string) => {
+    const dateObj = new Date(date)
+    return dateObj.toLocaleDateString([], { 
       weekday: 'short', 
       month: 'short', 
       day: 'numeric' 
@@ -157,10 +168,10 @@ export default function Dashboard() {
                 
                 <button
                   onClick={() => scheduleWorkout(slot)}
-                  disabled={scheduling === slot.start.toISOString()}
+                  disabled={scheduling === new Date(slot.start).toISOString()}
                   className="w-full bg-slate-900 text-white py-2 px-4 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {scheduling === slot.start.toISOString() ? (
+                  {scheduling === new Date(slot.start).toISOString() ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                       Scheduling...
