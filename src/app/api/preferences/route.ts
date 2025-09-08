@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -10,17 +9,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { preferences: true }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Return default preferences if none exist
-    const preferences = user.preferences || {
+    // Return default preferences for demo
+    const preferences = {
       earliestWorkoutTime: '06:00',
       latestWorkoutTime: '22:00',
       preferredWorkoutDuration: 30,
@@ -47,33 +37,12 @@ export async function POST(request: NextRequest) {
 
     const preferences = await request.json()
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+    // For demo purposes, just return success
+    // In a real app, you'd save these to a database
+    return NextResponse.json({ 
+      success: true,
+      message: 'Preferences saved (demo mode)' 
     })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Upsert user preferences
-    await prisma.userPreferences.upsert({
-      where: { userId: user.id },
-      update: {
-        earliestWorkoutTime: preferences.earliestWorkoutTime,
-        latestWorkoutTime: preferences.latestWorkoutTime,
-        preferredWorkoutDuration: preferences.preferredWorkoutDuration,
-        timezone: preferences.timezone,
-      },
-      create: {
-        userId: user.id,
-        earliestWorkoutTime: preferences.earliestWorkoutTime,
-        latestWorkoutTime: preferences.latestWorkoutTime,
-        preferredWorkoutDuration: preferences.preferredWorkoutDuration,
-        timezone: preferences.timezone,
-      },
-    })
-
-    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error saving preferences:', error)
     return NextResponse.json(

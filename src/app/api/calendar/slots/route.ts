@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { prisma } from '@/lib/prisma'
-import { CalendarService } from '@/lib/calendar'
 
 export async function POST() {
   try {
@@ -11,48 +9,24 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user preferences
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { preferences: true }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Get user's Google account with access token
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: user.id,
-        provider: 'google'
+    // For now, return mock data - calendar integration will be added later
+    const mockSlots = [
+      {
+        start: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+        end: new Date(Date.now() + 2.5 * 60 * 60 * 1000).toISOString(), // 2.5 hours from now
+        duration: 30
+      },
+      {
+        start: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4 hours from now
+        end: new Date(Date.now() + 4.5 * 60 * 60 * 1000).toISOString(), // 4.5 hours from now
+        duration: 30
       }
+    ]
+
+    return NextResponse.json({ 
+      slots: mockSlots,
+      message: 'Demo calendar slots (calendar integration coming soon)' 
     })
-
-    if (!account?.access_token) {
-      return NextResponse.json({ error: 'No Google access token found' }, { status: 400 })
-    }
-
-    // Use default preferences if none exist
-    const preferences = user.preferences || {
-      earliestWorkoutTime: '06:00',
-      latestWorkoutTime: '22:00',
-      preferredWorkoutDuration: 30,
-      timezone: 'UTC'
-    }
-
-    // Initialize calendar service
-    const calendarService = new CalendarService(account.access_token)
-    
-    // Find available slots
-    const slots = await calendarService.findAvailableSlots({
-      earliestTime: preferences.earliestWorkoutTime,
-      latestTime: preferences.latestWorkoutTime,
-      timezone: preferences.timezone,
-      preferredDuration: preferences.preferredWorkoutDuration
-    })
-
-    return NextResponse.json({ slots })
   } catch (error) {
     console.error('Error fetching calendar slots:', error)
     return NextResponse.json(
