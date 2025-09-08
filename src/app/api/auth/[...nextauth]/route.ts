@@ -16,7 +16,7 @@ const handler = NextAuth({
   ],
   callbacks: {
     async session({ session, token }: { session: any; token: any }) {
-      if (session.user) {
+      if (session.user && token.sub) {
         session.user.id = token.sub
       }
       return session
@@ -30,9 +30,17 @@ const handler = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   debug: process.env.NODE_ENV === 'development',
+  pages: {
+    signIn: '/',
+    error: '/',
+  },
 })
 
 export { handler as GET, handler as POST }
