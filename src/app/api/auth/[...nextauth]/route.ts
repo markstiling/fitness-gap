@@ -19,11 +19,19 @@ const handler = NextAuth({
       if (session.user && token.sub) {
         session.user.id = token.sub
       }
+      // Include the access token in the session
+      if (token.accessToken) {
+        (session as any).accessToken = token.accessToken
+      }
       return session
     },
-    async jwt({ token, user }: { token: any; user: any }) {
+    async jwt({ token, user, account }: { token: any; user: any; account: any }) {
       if (user) {
         token.id = user.id
+      }
+      if (account) {
+        token.accessToken = account.access_token
+        token.refreshToken = account.refresh_token
       }
       return token
     },
