@@ -16,22 +16,30 @@ const handler = NextAuth({
   ],
   callbacks: {
     async session({ session, token }: { session: any; token: any }) {
+      console.log('Session callback - token keys:', Object.keys(token))
+      console.log('Session callback - accessToken:', token.accessToken ? 'present' : 'missing')
+      
       if (session.user && token.sub) {
         session.user.id = token.sub
       }
       // Include the access token in the session
       if (token.accessToken) {
         (session as any).accessToken = token.accessToken
+        console.log('Added access token to session')
       }
       return session
     },
     async jwt({ token, user, account }: { token: any; user: any; account: any }) {
+      console.log('JWT callback - account:', account ? 'present' : 'missing')
+      console.log('JWT callback - access_token:', account?.access_token ? 'present' : 'missing')
+      
       if (user) {
         token.id = user.id
       }
       if (account) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
+        console.log('Stored access token in JWT token')
       }
       return token
     },
