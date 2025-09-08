@@ -15,7 +15,7 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account, profile }: { token: any; user: any; account: any; profile: any }) {
+    async jwt({ token, user, account }) {
       console.log('🔑 JWT callback called')
       console.log('🔑 Account present:', !!account)
       console.log('🔑 Access token present:', !!account?.access_token)
@@ -29,7 +29,7 @@ const handler = NextAuth({
       }
       return token
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }) {
       console.log('📋 Session callback called')
       console.log('📋 Token keys:', Object.keys(token))
       console.log('📋 Access token in token:', !!token.accessToken)
@@ -48,12 +48,20 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
+  debug: true,
   pages: {
     signIn: '/',
     error: '/',
   },
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  events: {
+    async signIn({ user, account, profile }) {
+      console.log('🎉 SignIn event triggered')
+      console.log('🎉 Account:', account ? 'present' : 'missing')
+      console.log('🎉 Access token:', account?.access_token ? 'present' : 'missing')
+    },
   },
 })
 
