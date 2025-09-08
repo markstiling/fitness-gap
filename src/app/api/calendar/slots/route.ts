@@ -7,17 +7,24 @@ export async function POST() {
     const session = await getServerSession()
     
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('No session found')
+      return NextResponse.json({ error: 'Unauthorized - no session found' }, { status: 401 })
     }
+
+    console.log('Session found for user:', session.user.email)
+    console.log('Session keys:', Object.keys(session))
 
     // Get the access token from the session
     const accessToken = (session as any).accessToken
     
     if (!accessToken) {
+      console.log('No access token found in session')
       return NextResponse.json({ 
-        error: 'No Google Calendar access. Please sign in again and grant calendar permissions.' 
+        error: 'No Google Calendar access. Please sign out and sign back in to grant calendar permissions.' 
       }, { status: 403 })
     }
+
+    console.log('Access token found, length:', accessToken.length)
 
     // Create Google Calendar API client
     const oauth2Client = new google.auth.OAuth2()
