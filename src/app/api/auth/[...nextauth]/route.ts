@@ -15,25 +15,32 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, token }: { session: any; token: any }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub
-      }
-      // Include the access token in the session
-      if (token.accessToken) {
-        (session as any).accessToken = token.accessToken
-      }
-      return session
-    },
-    async jwt({ token, user, account }: { token: any; user: any; account: any }) {
-      if (user) {
-        token.id = user.id
-      }
+    async jwt({ token, user, account, profile }: { token: any; user: any; account: any; profile: any }) {
+      console.log('🔑 JWT callback called')
+      console.log('🔑 Account present:', !!account)
+      console.log('🔑 Access token present:', !!account?.access_token)
+      
+      // Persist the OAuth access_token to the token right after signin
       if (account) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
+        token.id = user?.id
+        console.log('🔑 Stored access token in JWT')
       }
       return token
+    },
+    async session({ session, token }: { session: any; token: any }) {
+      console.log('📋 Session callback called')
+      console.log('📋 Token keys:', Object.keys(token))
+      console.log('📋 Access token in token:', !!token.accessToken)
+      
+      // Send properties to the client
+      if (token) {
+        session.user.id = token.id
+        session.accessToken = token.accessToken
+        console.log('📋 Added access token to session')
+      }
+      return session
     },
   },
   session: {
