@@ -95,11 +95,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                         ? 'bg-white bg-opacity-25 scale-110' 
                         : `${activity.color} hover:scale-105`
                     }`}>
-                      <Icon className={`w-6 h-6 transition-all duration-300 ${
-                        isSelected 
-                          ? 'text-white drop-shadow-sm' 
-                          : 'text-white'
-                      }`} />
+                      {isSelected ? (
+                        <span className="text-2xl transition-all duration-300 drop-shadow-sm">
+                          {activity.id === 'workouts' && '💪'}
+                          {activity.id === 'stretching' && '🧘‍♀️'}
+                          {activity.id === 'meditation' && '🧠'}
+                        </span>
+                      ) : (
+                        <Icon className={`w-6 h-6 transition-all duration-300 text-white`} />
+                      )}
                     </div>
                     <div className="flex-1 text-left">
                       <h3 className={`text-xl font-semibold ${
