@@ -15,7 +15,7 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       console.log('🔑 JWT callback called')
       console.log('🔑 Account present:', !!account)
       console.log('🔑 Access token present:', !!account?.access_token)
@@ -48,7 +48,6 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
-  debug: true,
   pages: {
     signIn: '/',
     error: '/',
