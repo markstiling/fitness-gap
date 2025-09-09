@@ -52,9 +52,9 @@ export default function Dashboard() {
       id: 'stretching',
       title: 'Stretching',
       icon: Heart,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+      borderColor: 'border-amber-200',
       duration: 15
     },
     {

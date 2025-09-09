@@ -92,9 +92,9 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       title: 'Stretching',
       description: 'Short times to stretch and move',
       icon: Heart,
-      color: 'bg-green-500',
-      textColor: 'text-green-600',
-      borderColor: 'border-green-200'
+      color: 'bg-amber-500',
+      textColor: 'text-amber-600',
+      borderColor: 'border-amber-200'
     },
     {
       id: 'meditation' as const,
