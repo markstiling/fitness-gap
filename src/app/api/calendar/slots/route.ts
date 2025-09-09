@@ -12,8 +12,10 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized - no session found' }, { status: 401 })
     }
 
-    console.log('Session found for user:', session.user.email)
-    console.log('Session keys:', Object.keys(session))
+  console.log('Session found for user:', session.user.email)
+  console.log('Session keys:', Object.keys(session))
+  console.log('Environment check - NODE_ENV:', process.env.NODE_ENV)
+  console.log('Environment check - VERCEL:', process.env.VERCEL)
 
     // Get the access token from the session
     const accessToken = (session as any).accessToken
