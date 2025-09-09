@@ -2,6 +2,8 @@
 
 A beautiful, minimalist web application that automatically finds and schedules workout time slots in your Google Calendar. Built with Next.js, TypeScript, and Tailwind CSS.
 
+<!-- Force deployment update -->
+
 ## Features
 
 - 🔐 **Google OAuth Authentication** - Secure login with your Google account
