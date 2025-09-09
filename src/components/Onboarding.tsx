@@ -92,7 +92,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <div className="flex items-center space-x-4">
                     <div className={`p-3 rounded-lg transition-all duration-300 ${
                       isSelected 
-                        ? 'bg-white bg-opacity-25 scale-110' 
+                        ? 'bg-gray-100 scale-110' 
                         : `${activity.color} hover:scale-105`
                     }`}>
                       {isSelected ? (
@@ -124,7 +124,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     }`}>
                       <Check className={`w-5 h-5 transition-all duration-300 ${
                         isSelected 
-                          ? 'text-white drop-shadow-sm scale-110' 
+                          ? 'text-green-500 drop-shadow-sm scale-110' 
                           : 'text-gray-400'
                       }`} />
                     </div>
