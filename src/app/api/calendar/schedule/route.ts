@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { start, end, duration } = await request.json()
+    const { start, end, duration, activityType = 'Workout' } = await request.json()
 
     if (!start || !end || !duration) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       console.log('No access token found - returning demo success')
       return NextResponse.json({ 
         success: true, 
-        message: 'Demo: Workout scheduled (calendar integration in progress - please sign out and back in)',
+        message: `Demo: ${activityType} scheduled (calendar integration in progress - please sign out and back in)`,
         eventId: 'demo-event-' + Date.now()
       })
     }
@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
 
     // Create the calendar event
     const event = {
-      summary: 'Fitness Workout',
-      description: `Scheduled workout session (${duration} minutes)`,
+      summary: `FitnessGap ${activityType}`,
+      description: `Scheduled ${activityType.toLowerCase()} session (${duration} minutes)`,
       start: {
         dateTime: start,
         timeZone: 'UTC',
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Workout scheduled successfully!',
+      message: `${activityType} scheduled successfully!`,
       eventId: response.data.id,
       eventLink: response.data.htmlLink
     })

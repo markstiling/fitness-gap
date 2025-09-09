@@ -30,9 +30,14 @@ export async function POST() {
           duration: 30
         },
         {
+          start: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+          end: new Date(Date.now() + 3.25 * 60 * 60 * 1000).toISOString(),
+          duration: 15
+        },
+        {
           start: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-          end: new Date(Date.now() + 4.5 * 60 * 60 * 1000).toISOString(),
-          duration: 30
+          end: new Date(Date.now() + 4.083 * 60 * 60 * 1000).toISOString(),
+          duration: 5
         }
       ]
       return NextResponse.json({ 
@@ -63,9 +68,13 @@ export async function POST() {
 
     const busyTimes = freeBusyResponse.data.calendars?.primary?.busy || []
     
-    // Generate available slots (simplified algorithm)
+    // Generate available slots for different activity types
     const availableSlots = []
-    const slotDuration = 30 // 30 minutes
+    const activityTypes = [
+      { duration: 30, name: 'Workouts' },
+      { duration: 15, name: 'Stretching' },
+      { duration: 5, name: 'Meditation' }
+    ]
     const startHour = 9 // 9 AM
     const endHour = 18 // 6 PM
     
@@ -76,31 +85,34 @@ export async function POST() {
       // Skip weekends for now
       if (currentDay.getDay() === 0 || currentDay.getDay() === 6) continue
       
-      // Check each hour from startHour to endHour
-      for (let hour = startHour; hour < endHour; hour++) {
-        const slotStart = new Date(currentDay)
-        slotStart.setHours(hour, 0, 0, 0)
-        const slotEnd = new Date(slotStart.getTime() + slotDuration * 60 * 1000)
-        
-        // Check if this slot conflicts with busy times
-        const isBusy = busyTimes.some((busy: any) => {
-          const busyStart = new Date(busy.start)
-          const busyEnd = new Date(busy.end)
-          return (slotStart < busyEnd && slotEnd > busyStart)
-        })
-        
-        // Only add slots that are in the future and not busy
-        if (!isBusy && slotStart > now && availableSlots.length < 5) {
-          availableSlots.push({
-            start: slotStart.toISOString(),
-            end: slotEnd.toISOString(),
-            duration: slotDuration
+      // Generate slots for each activity type
+      for (const activityType of activityTypes) {
+        // Check each hour from startHour to endHour
+        for (let hour = startHour; hour < endHour; hour++) {
+          const slotStart = new Date(currentDay)
+          slotStart.setHours(hour, 0, 0, 0)
+          const slotEnd = new Date(slotStart.getTime() + activityType.duration * 60 * 1000)
+          
+          // Check if this slot conflicts with busy times
+          const isBusy = busyTimes.some((busy: any) => {
+            const busyStart = new Date(busy.start)
+            const busyEnd = new Date(busy.end)
+            return (slotStart < busyEnd && slotEnd > busyStart)
           })
+          
+          // Only add slots that are in the future and not busy
+          if (!isBusy && slotStart > now && availableSlots.length < 15) {
+            availableSlots.push({
+              start: slotStart.toISOString(),
+              end: slotEnd.toISOString(),
+              duration: activityType.duration
+            })
+          }
         }
       }
     }
 
-    // If no real slots found, return some demo slots
+    // If no real slots found, return some demo slots with different durations
     if (availableSlots.length === 0) {
       const mockSlots = [
         {
@@ -109,8 +121,18 @@ export async function POST() {
           duration: 30
         },
         {
+          start: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+          end: new Date(Date.now() + 3.25 * 60 * 60 * 1000).toISOString(),
+          duration: 15
+        },
+        {
           start: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-          end: new Date(Date.now() + 4.5 * 60 * 60 * 1000).toISOString(),
+          end: new Date(Date.now() + 4.083 * 60 * 60 * 1000).toISOString(),
+          duration: 5
+        },
+        {
+          start: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
+          end: new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString(),
           duration: 30
         }
       ]

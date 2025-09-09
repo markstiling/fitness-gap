@@ -12,6 +12,12 @@ export async function GET() {
 
     // Return default preferences for demo
     const preferences = {
+      hasCompletedOnboarding: false,
+      activityPreferences: {
+        workouts: true,
+        stretching: false,
+        meditation: false
+      },
       earliestWorkoutTime: '06:00',
       latestWorkoutTime: '22:00',
       preferredWorkoutDuration: 30,
