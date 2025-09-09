@@ -83,18 +83,22 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 <button
                   key={activity.id}
                   onClick={() => toggleActivity(activity.id)}
-                  className={`w-full p-6 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                  className={`w-full p-6 rounded-xl border-2 transition-all duration-300 hover:scale-105 transform ${
                     isSelected
-                      ? `${activity.borderColor} ${activity.color} text-white shadow-lg`
-                      : 'border-gray-200 bg-white hover:border-gray-300'
+                      ? `${activity.borderColor} ${activity.color} text-white shadow-xl scale-105 ring-2 ring-white ring-opacity-30`
+                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg ${
-                      isSelected ? 'bg-white bg-opacity-20' : activity.color
+                    <div className={`p-3 rounded-lg transition-all duration-300 ${
+                      isSelected 
+                        ? 'bg-white bg-opacity-25 scale-110' 
+                        : `${activity.color} hover:scale-105`
                     }`}>
-                      <Icon className={`w-6 h-6 ${
-                        isSelected ? 'text-white' : 'text-white'
+                      <Icon className={`w-6 h-6 transition-all duration-300 ${
+                        isSelected 
+                          ? 'text-white drop-shadow-sm' 
+                          : 'text-white'
                       }`} />
                     </div>
                     <div className="flex-1 text-left">
@@ -109,11 +113,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                         {activity.description}
                       </p>
                     </div>
-                    <div className={`p-2 rounded-full ${
-                      isSelected ? 'bg-white bg-opacity-20' : 'bg-gray-100'
+                    <div className={`p-2 rounded-full transition-all duration-300 ${
+                      isSelected 
+                        ? 'bg-white bg-opacity-25 scale-110' 
+                        : 'bg-gray-100 hover:bg-gray-200'
                     }`}>
-                      <Check className={`w-5 h-5 ${
-                        isSelected ? 'text-white' : 'text-gray-400'
+                      <Check className={`w-5 h-5 transition-all duration-300 ${
+                        isSelected 
+                          ? 'text-white drop-shadow-sm scale-110' 
+                          : 'text-gray-400'
                       }`} />
                     </div>
                   </div>
