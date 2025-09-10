@@ -85,10 +85,10 @@ export async function POST() {
       // Skip weekends for now
       if (currentDay.getDay() === 0 || currentDay.getDay() === 6) continue
       
-      // Generate slots for each activity type
-      for (const activityType of activityTypes) {
-        // Check each hour from startHour to endHour
-        for (let hour = startHour; hour < endHour; hour++) {
+      // Check each hour from startHour to endHour
+      for (let hour = startHour; hour < endHour; hour++) {
+        // Generate slots for each activity type at this hour
+        for (const activityType of activityTypes) {
           const slotStart = new Date(currentDay)
           slotStart.setHours(hour, 0, 0, 0)
           const slotEnd = new Date(slotStart.getTime() + activityType.duration * 60 * 1000)
@@ -101,7 +101,7 @@ export async function POST() {
           })
           
           // Only add slots that are in the future and not busy
-          if (!isBusy && slotStart > now && availableSlots.length < 15) {
+          if (!isBusy && slotStart > now && availableSlots.length < 30) {
             availableSlots.push({
               start: slotStart.toISOString(),
               end: slotEnd.toISOString(),
