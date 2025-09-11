@@ -1,12 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Check, Dumbbell, Heart, Brain, Settings as SettingsIcon, Save } from 'lucide-react'
+import { Check, Dumbbell, Heart, Brain, Settings as SettingsIcon, Save, Clock } from 'lucide-react'
 
 interface ActivityPreferences {
   workouts: boolean
   stretching: boolean
   meditation: boolean
+}
+
+interface UserPreferences {
+  earliestWorkoutTime: string
+  latestWorkoutTime: string
+  preferredWorkoutDuration: number
+  timezone: string
 }
 
 interface SettingsProps {
@@ -20,6 +27,12 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
     stretching: false,
     meditation: false
   })
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
+    earliestWorkoutTime: '06:00',
+    latestWorkoutTime: '22:00',
+    preferredWorkoutDuration: 30,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -31,21 +44,37 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
     try {
       // First try to load from localStorage
       const savedPreferences = localStorage.getItem('activityPreferences')
+      const savedUserPreferences = localStorage.getItem('userPreferences')
+      
       if (savedPreferences) {
         setPreferences(JSON.parse(savedPreferences))
-        setIsLoading(false)
-        return
+      }
+      
+      if (savedUserPreferences) {
+        setUserPreferences(JSON.parse(savedUserPreferences))
       }
       
       // Fallback to API if no localStorage data
-      const response = await fetch('/api/preferences')
-      if (response.ok) {
-        const data = await response.json()
-        setPreferences(data.activityPreferences || {
-          workouts: true,
-          stretching: false,
-          meditation: false
-        })
+      if (!savedPreferences || !savedUserPreferences) {
+        const response = await fetch('/api/preferences')
+        if (response.ok) {
+          const data = await response.json()
+          if (!savedPreferences) {
+            setPreferences(data.activityPreferences || {
+              workouts: true,
+              stretching: false,
+              meditation: false
+            })
+          }
+          if (!savedUserPreferences) {
+            setUserPreferences({
+              earliestWorkoutTime: data.earliestWorkoutTime || '06:00',
+              latestWorkoutTime: data.latestWorkoutTime || '22:00',
+              preferredWorkoutDuration: data.preferredWorkoutDuration || 30,
+              timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+            })
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching preferences:', error)
@@ -59,6 +88,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
     try {
       // Save to localStorage for persistence
       localStorage.setItem('activityPreferences', JSON.stringify(preferences))
+      localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
       
       // Update parent component
       onPreferencesUpdate(preferences)
@@ -71,6 +101,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
         },
         body: JSON.stringify({
           activityPreferences: preferences,
+          userPreferences: userPreferences,
           hasCompletedOnboarding: true
         }),
       })
@@ -144,7 +175,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <SettingsIcon className="w-6 h-6 text-gray-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Activity Preferences</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
             </div>
             <button
               onClick={onClose}
@@ -228,6 +259,97 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
             </div>
           </div>
 
+          {/* Workout Preferences Section */}
+          <div className="bg-gray-50 rounded-xl p-6 mb-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Workout Preferences
+              </h3>
+              <p className="text-gray-600">
+                Customize when and how long you want to work out
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Workout Duration
+                </label>
+                <div className="flex gap-6">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="duration"
+                      value={15}
+                      checked={userPreferences.preferredWorkoutDuration === 15}
+                      onChange={(e) => setUserPreferences(prev => ({ ...prev, preferredWorkoutDuration: parseInt(e.target.value) }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">15 minutes</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="duration"
+                      value={30}
+                      checked={userPreferences.preferredWorkoutDuration === 30}
+                      onChange={(e) => setUserPreferences(prev => ({ ...prev, preferredWorkoutDuration: parseInt(e.target.value) }))}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">30 minutes</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Clock className="w-4 h-4 inline mr-1" />
+                    Earliest Workout Time
+                  </label>
+                  <input
+                    type="time"
+                    value={userPreferences.earliestWorkoutTime}
+                    onChange={(e) => setUserPreferences(prev => ({ ...prev, earliestWorkoutTime: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Clock className="w-4 h-4 inline mr-1" />
+                    Latest Workout Time
+                  </label>
+                  <input
+                    type="time"
+                    value={userPreferences.latestWorkoutTime}
+                    onChange={(e) => setUserPreferences(prev => ({ ...prev, latestWorkoutTime: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Timezone
+                </label>
+                <select
+                  value={userPreferences.timezone}
+                  onChange={(e) => setUserPreferences(prev => ({ ...prev, timezone: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="America/New_York">Eastern Time (ET)</option>
+                  <option value="America/Chicago">Central Time (CT)</option>
+                  <option value="America/Denver">Mountain Time (MT)</option>
+                  <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                  <option value="Europe/London">London (GMT)</option>
+                  <option value="Europe/Paris">Paris (CET)</option>
+                  <option value="Asia/Tokyo">Tokyo (JST)</option>
+                  <option value="Australia/Sydney">Sydney (AEST)</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex space-x-4">

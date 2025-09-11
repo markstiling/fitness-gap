@@ -261,7 +261,7 @@ export default function Dashboard() {
           <button
             onClick={() => setShowSettings(true)}
             className="p-3 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            title="Activity Preferences"
+            title="Settings"
           >
             <Settings className="w-5 h-5" />
           </button>

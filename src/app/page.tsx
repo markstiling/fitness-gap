@@ -2,13 +2,11 @@
 
 import { useSession, signIn } from 'next-auth/react'
 import { useState } from 'react'
-import { Settings, Dumbbell } from 'lucide-react'
+import { Dumbbell } from 'lucide-react'
 import Dashboard from '@/components/Dashboard'
-import Preferences from '@/components/Preferences'
 
 export default function Home() {
   const { data: session, status } = useSession()
-  const [showPreferences, setShowPreferences] = useState(false)
   const [isSigningIn, setIsSigningIn] = useState(false)
 
   const handleGoogleSignIn = async () => {
@@ -110,31 +108,22 @@ export default function Home() {
               <h1 className="text-xl font-bold text-slate-900">FitnessGap</h1>
             </div>
             
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowPreferences(!showPreferences)}
-                className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              
-              <div className="flex items-center gap-3">
-                <img
-                  src={session.user?.image || ''}
-                  alt={session.user?.name || ''}
-                  className="w-8 h-8 rounded-full"
-                />
-                <span className="text-sm font-medium text-slate-700">
-                  {session.user?.name}
-                </span>
-              </div>
+            <div className="flex items-center gap-3">
+              <img
+                src={session.user?.image || ''}
+                alt={session.user?.name || ''}
+                className="w-8 h-8 rounded-full"
+              />
+              <span className="text-sm font-medium text-slate-700">
+                {session.user?.name}
+              </span>
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showPreferences ? <Preferences /> : <Dashboard />}
+        <Dashboard />
       </main>
     </div>
   )
