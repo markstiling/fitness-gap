@@ -173,44 +173,56 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                 const isSelected = preferences[activity.id]
                 
                 return (
-                  <button
-                    key={activity.id}
-                    onClick={() => toggleActivity(activity.id)}
-                    className={`w-full p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                      isSelected
-                        ? `${activity.borderColor} ${activity.color} text-white shadow-lg`
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`p-3 rounded-lg ${
-                        isSelected ? 'bg-white bg-opacity-20' : activity.color
-                      }`}>
-                        <Icon className={`w-5 h-5 ${
-                          isSelected ? 'text-white' : 'text-white'
-                        }`} />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <h4 className={`text-lg font-semibold ${
-                          isSelected ? 'text-white' : 'text-gray-900'
-                        }`}>
-                          {activity.title}
-                        </h4>
-                        <p className={`${
-                          isSelected ? 'text-white text-opacity-90' : 'text-gray-600'
-                        }`}>
-                          {activity.description}
-                        </p>
-                      </div>
-                      <div className={`p-2 rounded-full ${
-                        isSelected ? 'bg-white bg-opacity-20' : 'bg-gray-100'
-                      }`}>
-                        <Check className={`w-4 h-4 ${
-                          isSelected ? 'text-white' : 'text-gray-400'
-                        }`} />
-                      </div>
+                <button
+                  key={activity.id}
+                  onClick={() => toggleActivity(activity.id)}
+                  className={`w-full p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 transform ${
+                    isSelected
+                      ? `${activity.borderColor} ${activity.color} text-white shadow-xl scale-105 ring-2 ring-white ring-opacity-30`
+                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-3 rounded-lg transition-all duration-300 ${
+                      isSelected 
+                        ? 'bg-gray-100 scale-110' 
+                        : `${activity.color} hover:scale-105`
+                    }`}>
+                      {isSelected ? (
+                        <span className="text-2xl transition-all duration-300 drop-shadow-sm">
+                          {activity.id === 'workouts' && '💪'}
+                          {activity.id === 'stretching' && '🧘‍♀️'}
+                          {activity.id === 'meditation' && '🧠'}
+                        </span>
+                      ) : (
+                        <Icon className={`w-5 h-5 transition-all duration-300 text-white`} />
+                      )}
                     </div>
-                  </button>
+                    <div className="flex-1 text-left">
+                      <h4 className={`text-lg font-semibold ${
+                        isSelected ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {activity.title}
+                      </h4>
+                      <p className={`${
+                        isSelected ? 'text-white text-opacity-90' : 'text-gray-600'
+                      }`}>
+                        {activity.description}
+                      </p>
+                    </div>
+                    <div className={`p-2 rounded-full transition-all duration-300 ${
+                      isSelected 
+                        ? 'bg-white bg-opacity-25 scale-110' 
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}>
+                      <Check className={`w-4 h-4 transition-all duration-300 ${
+                        isSelected 
+                          ? 'text-green-500 drop-shadow-sm scale-110' 
+                          : 'text-gray-400'
+                      }`} />
+                    </div>
+                  </div>
+                </button>
                 )
               })}
             </div>
