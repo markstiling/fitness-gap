@@ -10,9 +10,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Return default preferences for demo
+    // For demo purposes, we'll use a simple in-memory store
+    // In a real app, you'd query a database
+    const userEmail = session.user.email
+    
+    // Check if user has completed onboarding (this would be from database in real app)
+    // For demo, we'll assume they haven't completed it yet
     const preferences = {
-      hasCompletedOnboarding: false,
+      hasCompletedOnboarding: false, // This should be fetched from database
       activityPreferences: {
         workouts: true,
         stretching: false,

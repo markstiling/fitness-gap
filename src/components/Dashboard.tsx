@@ -74,22 +74,29 @@ export default function Dashboard() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const response = await fetch('/api/preferences')
-      if (response.ok) {
-        const data = await response.json()
-        setHasCompletedOnboarding(data.hasCompletedOnboarding || false)
-        setPreferences(data.activityPreferences || {
+      // Check localStorage first for onboarding status
+      const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true'
+      const savedPreferences = localStorage.getItem('activityPreferences')
+      
+      if (hasCompletedOnboarding && savedPreferences) {
+        // User has completed onboarding, use saved preferences
+        setHasCompletedOnboarding(true)
+        setPreferences(JSON.parse(savedPreferences))
+        setShowOnboarding(false)
+      } else {
+        // First time user, show onboarding
+        setHasCompletedOnboarding(false)
+        setPreferences({
           workouts: true,
           stretching: false,
           meditation: false
         })
-        
-        if (!data.hasCompletedOnboarding) {
-          setShowOnboarding(true)
-        }
+        setShowOnboarding(true)
       }
     } catch (error) {
       console.error('Error checking onboarding status:', error)
+      // Fallback to showing onboarding
+      setShowOnboarding(true)
     }
   }
 
@@ -168,6 +175,16 @@ export default function Dashboard() {
 
   const handleOnboardingComplete = async (activityPreferences: ActivityPreferences) => {
     try {
+      // Save to localStorage for persistence
+      localStorage.setItem('hasCompletedOnboarding', 'true')
+      localStorage.setItem('activityPreferences', JSON.stringify(activityPreferences))
+      
+      // Update state
+      setPreferences(activityPreferences)
+      setHasCompletedOnboarding(true)
+      setShowOnboarding(false)
+      
+      // Also save to API (for future database integration)
       const response = await fetch('/api/preferences', {
         method: 'POST',
         headers: {
@@ -179,10 +196,8 @@ export default function Dashboard() {
         }),
       })
 
-      if (response.ok) {
-        setPreferences(activityPreferences)
-        setHasCompletedOnboarding(true)
-        setShowOnboarding(false)
+      if (!response.ok) {
+        console.warn('Failed to save preferences to API, but localStorage saved successfully')
       }
     } catch (error) {
       console.error('Error saving onboarding preferences:', error)

@@ -29,6 +29,15 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
 
   const fetchPreferences = async () => {
     try {
+      // First try to load from localStorage
+      const savedPreferences = localStorage.getItem('activityPreferences')
+      if (savedPreferences) {
+        setPreferences(JSON.parse(savedPreferences))
+        setIsLoading(false)
+        return
+      }
+      
+      // Fallback to API if no localStorage data
       const response = await fetch('/api/preferences')
       if (response.ok) {
         const data = await response.json()
@@ -48,6 +57,13 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
   const savePreferences = async () => {
     setIsSaving(true)
     try {
+      // Save to localStorage for persistence
+      localStorage.setItem('activityPreferences', JSON.stringify(preferences))
+      
+      // Update parent component
+      onPreferencesUpdate(preferences)
+      
+      // Also save to API (for future database integration)
       const response = await fetch('/api/preferences', {
         method: 'POST',
         headers: {
@@ -60,8 +76,10 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       })
 
       if (response.ok) {
-        onPreferencesUpdate(preferences)
         onClose()
+      } else {
+        console.warn('Failed to save preferences to API, but localStorage saved successfully')
+        onClose() // Still close the modal since localStorage worked
       }
     } catch (error) {
       console.error('Error saving preferences:', error)
