@@ -148,65 +148,88 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Activity Preferences
-            </h3>
-            <p className="text-gray-600">
-              Choose which types of wellness activities you'd like to schedule
-            </p>
+        <div className="p-6 space-y-8">
+          {/* Activity Preferences Section */}
+          <div className="bg-gray-50 rounded-xl p-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Activity Preferences
+              </h3>
+              <p className="text-gray-600">
+                Choose which types of wellness activities you'd like to schedule
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {activities.map((activity) => {
+                const Icon = activity.icon
+                const isSelected = preferences[activity.id]
+                
+                return (
+                  <button
+                    key={activity.id}
+                    onClick={() => toggleActivity(activity.id)}
+                    className={`w-full p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                      isSelected
+                        ? `${activity.borderColor} ${activity.color} text-white shadow-lg`
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-3 rounded-lg ${
+                        isSelected ? 'bg-white bg-opacity-20' : activity.color
+                      }`}>
+                        <Icon className={`w-5 h-5 ${
+                          isSelected ? 'text-white' : 'text-white'
+                        }`} />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h4 className={`text-lg font-semibold ${
+                          isSelected ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          {activity.title}
+                        </h4>
+                        <p className={`${
+                          isSelected ? 'text-white text-opacity-90' : 'text-gray-600'
+                        }`}>
+                          {activity.description}
+                        </p>
+                      </div>
+                      <div className={`p-2 rounded-full ${
+                        isSelected ? 'bg-white bg-opacity-20' : 'bg-gray-100'
+                      }`}>
+                        <Check className={`w-4 h-4 ${
+                          isSelected ? 'text-white' : 'text-gray-400'
+                        }`} />
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          <div className="space-y-4 mb-8">
-            {activities.map((activity) => {
-              const Icon = activity.icon
-              const isSelected = preferences[activity.id]
-              
-              return (
-                <button
-                  key={activity.id}
-                  onClick={() => toggleActivity(activity.id)}
-                  className={`w-full p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                    isSelected
-                      ? `${activity.borderColor} ${activity.color} text-white shadow-lg`
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg ${
-                      isSelected ? 'bg-white bg-opacity-20' : activity.color
-                    }`}>
-                      <Icon className={`w-5 h-5 ${
-                        isSelected ? 'text-white' : 'text-white'
-                      }`} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h4 className={`text-lg font-semibold ${
-                        isSelected ? 'text-white' : 'text-gray-900'
-                      }`}>
-                        {activity.title}
-                      </h4>
-                      <p className={`${
-                        isSelected ? 'text-white text-opacity-90' : 'text-gray-600'
-                      }`}>
-                        {activity.description}
-                      </p>
-                    </div>
-                    <div className={`p-2 rounded-full ${
-                      isSelected ? 'bg-white bg-opacity-20' : 'bg-gray-100'
-                    }`}>
-                      <Check className={`w-4 h-4 ${
-                        isSelected ? 'text-white' : 'text-gray-400'
-                      }`} />
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+          {/* Account Section */}
+          <div className="bg-gray-50 rounded-xl p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Account
+              </h3>
+              <p className="text-gray-600">
+                Manage your account and sign out
+              </p>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="w-full px-6 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 hover:border-red-300 transition-all duration-200 flex items-center justify-center space-x-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
           </div>
 
-          <div className="flex space-x-4 mb-6">
+          {/* Action Buttons */}
+          <div className="flex space-x-4">
             <button
               onClick={onClose}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
@@ -229,25 +252,6 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   <span>Save Changes</span>
                 </>
               )}
-            </button>
-          </div>
-
-          {/* Sign Out Section */}
-          <div className="border-t border-gray-200 pt-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Account
-              </h3>
-              <p className="text-gray-600">
-                Sign out of your account and return to the login page
-              </p>
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="w-full px-6 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 hover:border-red-300 transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
             </button>
           </div>
         </div>
