@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Check, Dumbbell, Heart, Brain, Settings as SettingsIcon, Save } from 'lucide-react'
+import { signOut } from 'next-auth/react'
+import { Check, Dumbbell, Heart, Brain, Settings as SettingsIcon, Save, LogOut } from 'lucide-react'
 
 interface ActivityPreferences {
   workouts: boolean
@@ -75,6 +76,17 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       ...prev,
       [activityId]: !prev[activityId]
     }))
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true 
+      })
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const activities = [
@@ -194,7 +206,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
             })}
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 mb-6">
             <button
               onClick={onClose}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
@@ -217,6 +229,25 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   <span>Save Changes</span>
                 </>
               )}
+            </button>
+          </div>
+
+          {/* Sign Out Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Account
+              </h3>
+              <p className="text-gray-600">
+                Sign out of your account and return to the login page
+              </p>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="w-full px-6 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 hover:border-red-300 transition-all duration-200 flex items-center justify-center space-x-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
