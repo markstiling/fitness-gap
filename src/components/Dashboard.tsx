@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { Calendar, Clock, Play, CheckCircle, AlertCircle, Settings, Dumbbell, Heart, Brain } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
+import { Calendar, Clock, Play, CheckCircle, AlertCircle, Settings, Dumbbell, Heart, Brain, LogOut } from 'lucide-react'
 import { TimeSlot } from '@/lib/calendar'
 import Onboarding from './Onboarding'
 import SettingsComponent from './Settings'
@@ -193,6 +193,17 @@ export default function Dashboard() {
     setPreferences(newPreferences)
   }
 
+  const handleSignOut = async () => {
+    try {
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true 
+      })
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
   const formatTime = (date: Date | string) => {
     const dateObj = new Date(date)
     return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -231,13 +242,22 @@ export default function Dashboard() {
             We&apos;ll scan your calendar to find the perfect time slots for your activities
           </p>
         </div>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="p-3 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-          title="Settings"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-3 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            title="Activity Preferences"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="p-3 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {enabledActivities.length > 0 && (

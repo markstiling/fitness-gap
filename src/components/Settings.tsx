@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { signOut } from 'next-auth/react'
-import { Check, Dumbbell, Heart, Brain, Settings as SettingsIcon, Save, LogOut } from 'lucide-react'
+import { Check, Dumbbell, Heart, Brain, Settings as SettingsIcon, Save } from 'lucide-react'
 
 interface ActivityPreferences {
   workouts: boolean
@@ -78,16 +77,6 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
     }))
   }
 
-  const handleSignOut = async () => {
-    try {
-      await signOut({ 
-        callbackUrl: '/',
-        redirect: true 
-      })
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
 
   const activities = [
     {
@@ -137,7 +126,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <SettingsIcon className="w-6 h-6 text-gray-600" />
-              <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Activity Preferences</h2>
             </div>
             <button
               onClick={onClose}
@@ -148,9 +137,9 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
           </div>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="p-6">
           {/* Activity Preferences Section */}
-          <div className="bg-gray-50 rounded-xl p-6">
+          <div className="bg-gray-50 rounded-xl p-6 mb-6">
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Activity Preferences
@@ -209,24 +198,6 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
             </div>
           </div>
 
-          {/* Account Section */}
-          <div className="bg-gray-50 rounded-xl p-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Account
-              </h3>
-              <p className="text-gray-600">
-                Manage your account and sign out
-              </p>
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="w-full px-6 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 hover:border-red-300 transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </button>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex space-x-4">
