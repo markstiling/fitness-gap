@@ -1,15 +1,22 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { google } from 'googleapis'
 import { authOptions } from '../../auth/[...nextauth]/route'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {
       console.log('No session found')
       return NextResponse.json({ error: 'Unauthorized - no session found' }, { status: 401 })
+    }
+
+    // Get user preferences from request body
+    const body = await request.json()
+    const userPreferences = body.userPreferences || {
+      earliestWorkoutTime: '06:00',
+      latestWorkoutTime: '22:00'
     }
 
   console.log('Session found for user:', session.user.email)
@@ -75,8 +82,13 @@ export async function POST() {
       { duration: 15, name: 'Stretching' },
       { duration: 5, name: 'Meditation' }
     ]
-    const startHour = 9 // 9 AM
-    const endHour = 18 // 6 PM
+    
+    // Parse user's time preferences
+    const [earliestHour, earliestMinute] = userPreferences.earliestWorkoutTime.split(':').map(Number)
+    const [latestHour, latestMinute] = userPreferences.latestWorkoutTime.split(':').map(Number)
+    
+    const startHour = earliestHour
+    const endHour = latestHour
     
     // Check each day for the next 7 days
     for (let day = 0; day < 7; day++) {
@@ -146,7 +158,7 @@ export async function POST() {
       slots: availableSlots,
       message: `Found ${availableSlots.length} available slots in the next 7 days` 
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching calendar slots:', error)
     
     // Handle specific Google API errors

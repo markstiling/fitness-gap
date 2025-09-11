@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Calendar, Clock, Play, CheckCircle, AlertCircle, Dumbbell, Heart, Brain } from 'lucide-react'
 import { TimeSlot } from '@/lib/calendar'
-import Onboarding from './Onboarding'
 
 interface ActivityPreferences {
   workouts: boolean
@@ -33,8 +32,6 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
   const [loading, setLoading] = useState(false)
   const [scheduling, setScheduling] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [showOnboarding, setShowOnboarding] = useState(false)
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
 
   const activityTypes: ActivityType[] = [
     {
@@ -66,48 +63,27 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
     }
   ]
 
-  useEffect(() => {
-    checkOnboardingStatus()
-  }, [])
-
-  const checkOnboardingStatus = async () => {
-    try {
-      // Check localStorage first for onboarding status
-      const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true'
-      const savedPreferences = localStorage.getItem('activityPreferences')
-      
-      if (hasCompletedOnboarding && savedPreferences) {
-        // User has completed onboarding, use saved preferences
-        setHasCompletedOnboarding(true)
-        setPreferences(JSON.parse(savedPreferences))
-        setShowOnboarding(false)
-      } else {
-        // First time user, show onboarding
-        setHasCompletedOnboarding(false)
-        setPreferences({
-          workouts: true,
-          stretching: false,
-          meditation: false
-        })
-        setShowOnboarding(true)
-      }
-    } catch (error) {
-      console.error('Error checking onboarding status:', error)
-      // Fallback to showing onboarding
-      setShowOnboarding(true)
-    }
-  }
 
   const findAvailableSlots = async () => {
     setLoading(true)
     setMessage(null)
     
     try {
+      // Get user preferences from localStorage
+      const userPreferences = localStorage.getItem('userPreferences')
+      const parsedUserPreferences = userPreferences ? JSON.parse(userPreferences) : {
+        earliestWorkoutTime: '06:00',
+        latestWorkoutTime: '22:00'
+      }
+      
       const response = await fetch('/api/calendar/slots', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          userPreferences: parsedUserPreferences
+        }),
       })
 
       if (!response.ok) {
@@ -171,36 +147,6 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
     }
   }
 
-  const handleOnboardingComplete = async (activityPreferences: ActivityPreferences) => {
-    try {
-      // Save to localStorage for persistence
-      localStorage.setItem('hasCompletedOnboarding', 'true')
-      localStorage.setItem('activityPreferences', JSON.stringify(activityPreferences))
-      
-      // Update parent component
-      onPreferencesUpdate(activityPreferences)
-      setHasCompletedOnboarding(true)
-      setShowOnboarding(false)
-      
-      // Also save to API (for future database integration)
-      const response = await fetch('/api/preferences', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          activityPreferences,
-          hasCompletedOnboarding: true
-        }),
-      })
-
-      if (!response.ok) {
-        console.warn('Failed to save preferences to API, but localStorage saved successfully')
-      }
-    } catch (error) {
-      console.error('Error saving onboarding preferences:', error)
-    }
-  }
 
 
   const formatTime = (date: Date | string) => {
@@ -217,9 +163,6 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
     })
   }
 
-  if (showOnboarding) {
-    return <Onboarding onComplete={handleOnboardingComplete} />
-  }
 
 
   const enabledActivities = activityTypes.filter(activity => preferences[activity.id])

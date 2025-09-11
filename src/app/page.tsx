@@ -1,10 +1,11 @@
 'use client'
 
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dumbbell, Settings, LogOut } from 'lucide-react'
 import Dashboard from '@/components/Dashboard'
 import SettingsComponent from '@/components/Settings'
+import Onboarding from '@/components/Onboarding'
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -15,6 +16,8 @@ export default function Home() {
     stretching: false,
     meditation: false
   })
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true)
@@ -33,6 +36,71 @@ export default function Home() {
       })
     } catch (error) {
       console.error('Error signing out:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (session) {
+      checkOnboardingStatus()
+    }
+  }, [session])
+
+  const checkOnboardingStatus = () => {
+    try {
+      // Check localStorage first for onboarding status
+      const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true'
+      const savedPreferences = localStorage.getItem('activityPreferences')
+      
+      if (hasCompletedOnboarding && savedPreferences) {
+        // User has completed onboarding, use saved preferences
+        setHasCompletedOnboarding(true)
+        setPreferences(JSON.parse(savedPreferences))
+        setShowOnboarding(false)
+      } else {
+        // First time user, show onboarding
+        setHasCompletedOnboarding(false)
+        setPreferences({
+          workouts: true,
+          stretching: false,
+          meditation: false
+        })
+        setShowOnboarding(true)
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error)
+      // Fallback to showing onboarding
+      setShowOnboarding(true)
+    }
+  }
+
+  const handleOnboardingComplete = async (activityPreferences: any) => {
+    try {
+      // Save to localStorage for persistence
+      localStorage.setItem('hasCompletedOnboarding', 'true')
+      localStorage.setItem('activityPreferences', JSON.stringify(activityPreferences))
+      
+      // Update state
+      setPreferences(activityPreferences)
+      setHasCompletedOnboarding(true)
+      setShowOnboarding(false)
+      
+      // Also save to API (for future database integration)
+      const response = await fetch('/api/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          activityPreferences,
+          hasCompletedOnboarding: true
+        }),
+      })
+
+      if (!response.ok) {
+        console.warn('Failed to save preferences to API, but localStorage saved successfully')
+      }
+    } catch (error) {
+      console.error('Error saving onboarding preferences:', error)
     }
   }
 
@@ -160,7 +228,9 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showSettings ? (
+        {showOnboarding ? (
+          <Onboarding onComplete={handleOnboardingComplete} />
+        ) : showSettings ? (
           <SettingsComponent 
             onClose={() => setShowSettings(false)}
             onPreferencesUpdate={setPreferences}
