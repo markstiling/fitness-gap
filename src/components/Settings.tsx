@@ -31,7 +31,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
     earliestWorkoutTime: '06:00',
     latestWorkoutTime: '22:00',
     preferredWorkoutDuration: 30,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone: typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'America/New_York',
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -71,7 +71,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
               earliestWorkoutTime: data.earliestWorkoutTime || '06:00',
               latestWorkoutTime: data.latestWorkoutTime || '22:00',
               preferredWorkoutDuration: data.preferredWorkoutDuration || 30,
-              timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+              timezone: data.timezone || (typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'America/New_York'),
             })
           }
         }
@@ -86,6 +86,8 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
   const savePreferences = async () => {
     setIsSaving(true)
     try {
+      console.log('Saving preferences:', { preferences, userPreferences })
+      
       // Save to localStorage for persistence
       localStorage.setItem('activityPreferences', JSON.stringify(preferences))
       localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
@@ -107,6 +109,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       })
 
       if (response.ok) {
+        console.log('Preferences saved successfully')
         onClose()
       } else {
         console.warn('Failed to save preferences to API, but localStorage saved successfully')
@@ -310,7 +313,12 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   <input
                     type="time"
                     value={userPreferences.earliestWorkoutTime}
-                    onChange={(e) => setUserPreferences(prev => ({ ...prev, earliestWorkoutTime: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value) {
+                        setUserPreferences(prev => ({ ...prev, earliestWorkoutTime: value }))
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -323,7 +331,12 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   <input
                     type="time"
                     value={userPreferences.latestWorkoutTime}
-                    onChange={(e) => setUserPreferences(prev => ({ ...prev, latestWorkoutTime: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value) {
+                        setUserPreferences(prev => ({ ...prev, latestWorkoutTime: value }))
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
