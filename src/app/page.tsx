@@ -7,14 +7,24 @@ import Dashboard from '@/components/Dashboard'
 import SettingsComponent from '@/components/Settings'
 import Onboarding from '@/components/Onboarding'
 
+interface ActivityPreferences {
+  workouts: boolean
+  stretching: boolean
+  meditation: boolean
+  earliestWorkoutTime: string
+  latestWorkoutTime: string
+}
+
 export default function Home() {
   const { data: session, status } = useSession()
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<ActivityPreferences>({
     workouts: true,
     stretching: false,
-    meditation: false
+    meditation: false,
+    earliestWorkoutTime: '06:00',
+    latestWorkoutTime: '22:00'
   })
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -62,7 +72,9 @@ export default function Home() {
         setPreferences({
           workouts: true,
           stretching: false,
-          meditation: false
+          meditation: false,
+          earliestWorkoutTime: '06:00',
+          latestWorkoutTime: '22:00'
         })
         setShowOnboarding(true)
       }

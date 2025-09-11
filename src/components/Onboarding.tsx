@@ -8,6 +8,8 @@ interface OnboardingProps {
     workouts: boolean
     stretching: boolean
     meditation: boolean
+    earliestWorkoutTime: string
+    latestWorkoutTime: string
   }) => void
 }
 
@@ -16,6 +18,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     workouts: false,
     stretching: false,
     meditation: false
+  })
+  const [timePreferences, setTimePreferences] = useState({
+    earliestWorkoutTime: '06:00',
+    latestWorkoutTime: '22:00'
   })
 
   const activities = [
@@ -56,7 +62,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   }
 
   const handleComplete = () => {
-    onComplete(selectedActivities)
+    onComplete({
+      ...selectedActivities,
+      ...timePreferences
+    })
   }
 
   const hasSelection = Object.values(selectedActivities).some(Boolean)
@@ -132,6 +141,46 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 </button>
               )
             })}
+          </div>
+
+          {/* Time Preferences Section */}
+          <div className="bg-gray-50 rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              When would you like to schedule these activities?
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Earliest time
+                </label>
+                <input
+                  type="time"
+                  value={timePreferences.earliestWorkoutTime}
+                  onChange={(e) => setTimePreferences(prev => ({ 
+                    ...prev, 
+                    earliestWorkoutTime: e.target.value 
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Latest time
+                </label>
+                <input
+                  type="time"
+                  value={timePreferences.latestWorkoutTime}
+                  onChange={(e) => setTimePreferences(prev => ({ 
+                    ...prev, 
+                    latestWorkoutTime: e.target.value 
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-3">
+              Activities will be scheduled during business days (Monday-Friday) within this time range
+            </p>
           </div>
 
           <div className="text-center">

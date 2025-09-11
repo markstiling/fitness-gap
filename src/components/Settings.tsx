@@ -7,11 +7,11 @@ interface ActivityPreferences {
   workouts: boolean
   stretching: boolean
   meditation: boolean
+  earliestWorkoutTime: string
+  latestWorkoutTime: string
 }
 
 interface UserPreferences {
-  earliestWorkoutTime: string
-  latestWorkoutTime: string
   preferredWorkoutDuration: number
   timezone: string
 }
@@ -25,11 +25,11 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
   const [preferences, setPreferences] = useState<ActivityPreferences>({
     workouts: true,
     stretching: false,
-    meditation: false
+    meditation: false,
+    earliestWorkoutTime: '06:00',
+    latestWorkoutTime: '22:00'
   })
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
-    earliestWorkoutTime: '06:00',
-    latestWorkoutTime: '22:00',
     preferredWorkoutDuration: 30,
     timezone: typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'America/New_York',
   })
@@ -47,7 +47,8 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       const savedUserPreferences = localStorage.getItem('userPreferences')
       
       if (savedPreferences) {
-        setPreferences(JSON.parse(savedPreferences))
+        const parsed = JSON.parse(savedPreferences)
+        setPreferences(parsed)
       }
       
       if (savedUserPreferences) {
@@ -60,16 +61,16 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
         if (response.ok) {
           const data = await response.json()
           if (!savedPreferences) {
-            setPreferences(data.activityPreferences || {
-              workouts: true,
-              stretching: false,
-              meditation: false
+            setPreferences({
+              workouts: data.activityPreferences?.workouts || true,
+              stretching: data.activityPreferences?.stretching || false,
+              meditation: data.activityPreferences?.meditation || false,
+              earliestWorkoutTime: data.earliestWorkoutTime || '06:00',
+              latestWorkoutTime: data.latestWorkoutTime || '22:00'
             })
           }
           if (!savedUserPreferences) {
             setUserPreferences({
-              earliestWorkoutTime: data.earliestWorkoutTime || '06:00',
-              latestWorkoutTime: data.latestWorkoutTime || '22:00',
               preferredWorkoutDuration: data.preferredWorkoutDuration || 30,
               timezone: data.timezone || (typeof window !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'America/New_York'),
             })
@@ -327,11 +328,11 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   </label>
                   <input
                     type="time"
-                    value={userPreferences.earliestWorkoutTime}
+                    value={preferences.earliestWorkoutTime}
                     onChange={(e) => {
                       const value = e.target.value
                       if (value) {
-                        setUserPreferences(prev => ({ ...prev, earliestWorkoutTime: value }))
+                        setPreferences(prev => ({ ...prev, earliestWorkoutTime: value }))
                       }
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -345,11 +346,11 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   </label>
                   <input
                     type="time"
-                    value={userPreferences.latestWorkoutTime}
+                    value={preferences.latestWorkoutTime}
                     onChange={(e) => {
                       const value = e.target.value
                       if (value) {
-                        setUserPreferences(prev => ({ ...prev, latestWorkoutTime: value }))
+                        setPreferences(prev => ({ ...prev, latestWorkoutTime: value }))
                       }
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
