@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { Calendar, Clock, Play, CheckCircle, AlertCircle, Settings, Dumbbell, Heart, Brain, LogOut } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { Calendar, Clock, Play, CheckCircle, AlertCircle, Dumbbell, Heart, Brain } from 'lucide-react'
 import { TimeSlot } from '@/lib/calendar'
 import Onboarding from './Onboarding'
-import SettingsComponent from './Settings'
 
 interface ActivityPreferences {
   workouts: boolean
@@ -23,19 +22,18 @@ interface ActivityType {
   duration: number
 }
 
-export default function Dashboard() {
+interface DashboardProps {
+  preferences: ActivityPreferences
+  onPreferencesUpdate: (preferences: ActivityPreferences) => void
+}
+
+export default function Dashboard({ preferences, onPreferencesUpdate }: DashboardProps) {
   useSession()
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(false)
   const [scheduling, setScheduling] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [preferences, setPreferences] = useState<ActivityPreferences>({
-    workouts: true,
-    stretching: false,
-    meditation: false
-  })
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false)
 
   const activityTypes: ActivityType[] = [
@@ -179,8 +177,8 @@ export default function Dashboard() {
       localStorage.setItem('hasCompletedOnboarding', 'true')
       localStorage.setItem('activityPreferences', JSON.stringify(activityPreferences))
       
-      // Update state
-      setPreferences(activityPreferences)
+      // Update parent component
+      onPreferencesUpdate(activityPreferences)
       setHasCompletedOnboarding(true)
       setShowOnboarding(false)
       
@@ -204,20 +202,6 @@ export default function Dashboard() {
     }
   }
 
-  const handlePreferencesUpdate = (newPreferences: ActivityPreferences) => {
-    setPreferences(newPreferences)
-  }
-
-  const handleSignOut = async () => {
-    try {
-      await signOut({ 
-        callbackUrl: '/',
-        redirect: true 
-      })
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
 
   const formatTime = (date: Date | string) => {
     const dateObj = new Date(date)
@@ -237,42 +221,16 @@ export default function Dashboard() {
     return <Onboarding onComplete={handleOnboardingComplete} />
   }
 
-  if (showSettings) {
-    return (
-      <SettingsComponent 
-        onClose={() => setShowSettings(false)}
-        onPreferencesUpdate={handlePreferencesUpdate}
-      />
-    )
-  }
 
   const enabledActivities = activityTypes.filter(activity => preferences[activity.id])
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div className="text-center flex-1">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Find Your Wellness Time</h2>
-          <p className="text-slate-600">
-            We&apos;ll scan your calendar to find the perfect time slots for your activities
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-3 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            title="Settings"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleSignOut}
-            className="p-3 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Sign Out"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Find Your Wellness Time</h2>
+        <p className="text-slate-600">
+          We&apos;ll scan your calendar to find the perfect time slots for your activities
+        </p>
       </div>
 
       {enabledActivities.length > 0 && (
@@ -299,17 +257,11 @@ export default function Dashboard() {
 
       {enabledActivities.length === 0 && (
         <div className="text-center py-8">
-          <Settings className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <Dumbbell className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 mb-2">No activities selected</h3>
           <p className="text-slate-600 mb-4">
             Please select at least one activity type in settings to get started
           </p>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="bg-slate-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors"
-          >
-            Open Settings
-          </button>
         </div>
       )}
 

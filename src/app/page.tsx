@@ -1,13 +1,20 @@
 'use client'
 
-import { useSession, signIn } from 'next-auth/react'
+import { useSession, signIn, signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { Dumbbell } from 'lucide-react'
+import { Dumbbell, Settings, LogOut } from 'lucide-react'
 import Dashboard from '@/components/Dashboard'
+import SettingsComponent from '@/components/Settings'
 
 export default function Home() {
   const { data: session, status } = useSession()
   const [isSigningIn, setIsSigningIn] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [preferences, setPreferences] = useState({
+    workouts: true,
+    stretching: false,
+    meditation: false
+  })
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true)
@@ -15,6 +22,17 @@ export default function Home() {
       await signIn('google', { callbackUrl: '/' })
     } catch (error) {
       setIsSigningIn(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true 
+      })
+    } catch (error) {
+      console.error('Error signing out:', error)
     }
   }
 
@@ -108,22 +126,48 @@ export default function Home() {
               <h1 className="text-xl font-bold text-slate-900">FitnessGap</h1>
             </div>
             
-            <div className="flex items-center gap-3">
-              <img
-                src={session.user?.image || ''}
-                alt={session.user?.name || ''}
-                className="w-8 h-8 rounded-full"
-              />
-              <span className="text-sm font-medium text-slate-700">
-                {session.user?.name}
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src={session.user?.image || ''}
+                  alt={session.user?.name || ''}
+                  className="w-8 h-8 rounded-full"
+                />
+                <span className="text-sm font-medium text-slate-700">
+                  {session.user?.name}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Settings"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Dashboard />
+        {showSettings ? (
+          <SettingsComponent 
+            onClose={() => setShowSettings(false)}
+            onPreferencesUpdate={setPreferences}
+          />
+        ) : (
+          <Dashboard preferences={preferences} onPreferencesUpdate={setPreferences} />
+        )}
       </main>
     </div>
   )
