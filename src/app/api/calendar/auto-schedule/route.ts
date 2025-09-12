@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     console.log('Auto-scheduling for user:', session.user.email)
     console.log('Activity preferences:', activityPreferences)
     console.log('User preferences:', userPreferences)
+    console.log('Existing busy times:', busyTimes.length, 'events')
 
     // Get the access token from the session
     const accessToken = (session as any).accessToken
@@ -69,19 +70,38 @@ export async function POST(request: Request) {
       
       const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'long' })
       
+      // Create a combined busy times list that includes both existing calendar events
+      // and any events we've scheduled in this session
+      const allBusyTimes = [...busyTimes]
+      
+      // Add any events we've already scheduled today to the busy times
+      scheduledEvents.forEach(event => {
+        const eventStart = new Date(event.start)
+        const eventEnd = new Date(event.end)
+        
+        // Check if this event is on the same day
+        if (eventStart.toDateString() === currentDay.toDateString()) {
+          allBusyTimes.push({
+            start: eventStart.toISOString(),
+            end: eventEnd.toISOString()
+          })
+        }
+      })
+      
       // Schedule workouts (1 per day)
       if (activityPreferences.workouts) {
         const workoutSlot = findAvailableSlot(
           currentDay, 
           earliestHour, 
           latestHour, 
-          busyTimes, 
+          allBusyTimes, 
           30, // 30 minutes
           now
         )
         
         if (workoutSlot) {
           try {
+            console.log(`Scheduling workout for ${dayName} at ${workoutSlot.start.toLocaleTimeString()}`)
             const event = await createCalendarEvent(
               calendar,
               'Workout Session',
@@ -90,6 +110,11 @@ export async function POST(request: Request) {
               workoutSlot.end
             )
             scheduledEvents.push(event)
+            // Add this event to busy times for subsequent activities
+            allBusyTimes.push({
+              start: workoutSlot.start.toISOString(),
+              end: workoutSlot.end.toISOString()
+            })
             schedulingResults.workouts.scheduled++
             schedulingResults.workouts.days.push(dayName)
           } catch (error) {
@@ -97,6 +122,7 @@ export async function POST(request: Request) {
             schedulingResults.workouts.failed++
           }
         } else {
+          console.log(`No available time for workout on ${dayName}`)
           schedulingResults.workouts.failed++
           schedulingResults.workouts.days.push(`${dayName} (no available time)`)
         }
@@ -109,13 +135,14 @@ export async function POST(request: Request) {
             currentDay, 
             earliestHour, 
             latestHour, 
-            busyTimes, 
+            allBusyTimes, 
             15, // 15 minutes
             now
           )
           
           if (stretchSlot) {
             try {
+              console.log(`Scheduling stretching #${i + 1} for ${dayName} at ${stretchSlot.start.toLocaleTimeString()}`)
               const event = await createCalendarEvent(
                 calendar,
                 'Stretching Break',
@@ -124,6 +151,11 @@ export async function POST(request: Request) {
                 stretchSlot.end
               )
               scheduledEvents.push(event)
+              // Add this event to busy times for subsequent activities
+              allBusyTimes.push({
+                start: stretchSlot.start.toISOString(),
+                end: stretchSlot.end.toISOString()
+              })
               schedulingResults.stretching.scheduled++
               if (i === 0) schedulingResults.stretching.days.push(dayName)
             } catch (error) {
@@ -131,6 +163,7 @@ export async function POST(request: Request) {
               schedulingResults.stretching.failed++
             }
           } else {
+            console.log(`No available time for stretching #${i + 1} on ${dayName}`)
             schedulingResults.stretching.failed++
             if (i === 0) schedulingResults.stretching.days.push(`${dayName} (no available time)`)
           }
@@ -144,13 +177,14 @@ export async function POST(request: Request) {
             currentDay, 
             earliestHour, 
             latestHour, 
-            busyTimes, 
+            allBusyTimes, 
             5, // 5 minutes
             now
           )
           
           if (meditationSlot) {
             try {
+              console.log(`Scheduling meditation #${i + 1} for ${dayName} at ${meditationSlot.start.toLocaleTimeString()}`)
               const event = await createCalendarEvent(
                 calendar,
                 'Meditation Break',
@@ -159,6 +193,11 @@ export async function POST(request: Request) {
                 meditationSlot.end
               )
               scheduledEvents.push(event)
+              // Add this event to busy times for subsequent activities
+              allBusyTimes.push({
+                start: meditationSlot.start.toISOString(),
+                end: meditationSlot.end.toISOString()
+              })
               schedulingResults.meditation.scheduled++
               if (i === 0) schedulingResults.meditation.days.push(dayName)
             } catch (error) {
@@ -166,6 +205,7 @@ export async function POST(request: Request) {
               schedulingResults.meditation.failed++
             }
           } else {
+            console.log(`No available time for meditation #${i + 1} on ${dayName}`)
             schedulingResults.meditation.failed++
             if (i === 0) schedulingResults.meditation.days.push(`${dayName} (no available time)`)
           }
@@ -206,14 +246,22 @@ function findAvailableSlot(
   durationMinutes: number,
   now: Date
 ) {
-  // Check each hour from start to end
-  for (let hour = startHour; hour < endHour; hour++) {
+  // Check in 15-minute intervals for better slot finding
+  const intervalMinutes = 15
+  const totalMinutes = (endHour - startHour) * 60
+  
+  for (let minutes = 0; minutes < totalMinutes; minutes += intervalMinutes) {
     const slotStart = new Date(day)
-    slotStart.setHours(hour, 0, 0, 0)
+    slotStart.setHours(startHour, minutes, 0, 0)
     const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000)
     
     // Skip if slot is in the past
     if (slotStart <= now) continue
+    
+    // Skip if slot would extend beyond the end time
+    if (slotEnd.getHours() > endHour || (slotEnd.getHours() === endHour && slotEnd.getMinutes() > 0)) {
+      continue
+    }
     
     // Check if this slot conflicts with busy times
     const isBusy = busyTimes.some((busy: any) => {
