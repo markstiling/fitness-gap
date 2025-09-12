@@ -35,14 +35,14 @@ export async function POST(request: Request) {
     oauth2Client.setCredentials({ access_token: accessToken })
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
-    // Get free/busy information for the next 7 days
+    // Get free/busy information from today until end of current month
     const now = new Date()
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Last day of current month
+    
     const freeBusyResponse = await calendar.freebusy.query({
       resource: {
         timeMin: now.toISOString(),
-        timeMax: nextWeek.toISOString(),
+        timeMax: endOfMonth.toISOString(),
         items: [{ id: 'primary' }],
       },
     })
@@ -61,12 +61,16 @@ export async function POST(request: Request) {
       meditation: { scheduled: 0, failed: 0, days: [] }
     }
 
-    // Check each business day for the next 7 days
-    for (let day = 0; day < 7; day++) {
-      const currentDay = new Date(now.getTime() + day * 24 * 60 * 60 * 1000)
-      
+    // Check each business day from today until end of month
+    const currentDay = new Date(now)
+    currentDay.setHours(0, 0, 0, 0) // Start of day
+    
+    while (currentDay <= endOfMonth) {
       // Skip weekends
-      if (currentDay.getDay() === 0 || currentDay.getDay() === 6) continue
+      if (currentDay.getDay() === 0 || currentDay.getDay() === 6) {
+        currentDay.setDate(currentDay.getDate() + 1)
+        continue
+      }
       
       const dayName = currentDay.toLocaleDateString('en-US', { weekday: 'long' })
       
@@ -211,11 +215,14 @@ export async function POST(request: Request) {
           }
         }
       }
+      
+      // Move to next day
+      currentDay.setDate(currentDay.getDate() + 1)
     }
 
     return NextResponse.json({ 
       success: true,
-      message: `Scheduled ${scheduledEvents.length} wellness activities for the week`,
+      message: `Scheduled ${scheduledEvents.length} wellness activities until the end of the month`,
       scheduledEvents,
       schedulingResults
     })
