@@ -214,7 +214,7 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
             ) : (
               <>
                 <Calendar className="w-5 h-5" />
-                Auto-Schedule This Week
+                Auto-Schedule Wellness Calendar Events
               </>
             )}
           </button>
