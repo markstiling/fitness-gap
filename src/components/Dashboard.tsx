@@ -214,7 +214,7 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
             ) : (
               <>
                 <Calendar className="w-5 h-5" />
-                Auto-Schedule Until End of Month
+                Auto Schedule for the Month of {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </>
             )}
           </button>
