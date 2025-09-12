@@ -35,6 +35,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isRemovingActivities, setIsRemovingActivities] = useState(false)
 
   useEffect(() => {
     fetchPreferences()
@@ -120,6 +121,34 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       console.error('Error saving preferences:', error)
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const removeAllScheduledActivities = async () => {
+    setIsRemovingActivities(true)
+    try {
+      const response = await fetch('/api/calendar/remove-scheduled', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to remove scheduled activities')
+      }
+
+      const data = await response.json()
+      console.log('Removed activities:', data)
+      
+      // Show success message (you could add a toast notification here)
+      alert(`Successfully removed ${data.removedCount} scheduled activities from your calendar!`)
+      
+    } catch (error) {
+      console.error('Error removing scheduled activities:', error)
+      alert('Failed to remove scheduled activities. Please try again.')
+    } finally {
+      setIsRemovingActivities(false)
     }
   }
 
@@ -378,6 +407,35 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Scheduled Activities Management */}
+          <div className="bg-red-50 rounded-xl p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Manage Scheduled Activities
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Remove all wellness activities that were automatically scheduled by FitnessGap from your calendar.
+            </p>
+            <button
+              onClick={removeAllScheduledActivities}
+              disabled={isRemovingActivities}
+              className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isRemovingActivities ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Removing Activities...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Remove All Scheduled Activities</span>
+                </>
+              )}
+            </button>
           </div>
 
           {/* Action Buttons */}
