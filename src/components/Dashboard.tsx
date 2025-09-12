@@ -352,7 +352,14 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activities</h3>
               <div className="space-y-3">
                 {wellnessStats.events.slice(0, 5).map((event) => {
-                  const activity = activityTypes.find(a => a.id === event.type)
+                  // Map API event types to activity types
+                  const typeMapping: { [key: string]: string } = {
+                    'workout': 'workouts',
+                    'stretching': 'stretching', 
+                    'meditation': 'meditation'
+                  }
+                  const mappedType = typeMapping[event.type] || event.type
+                  const activity = activityTypes.find(a => a.id === mappedType)
                   const Icon = activity?.icon || Calendar
                   
                   return (
