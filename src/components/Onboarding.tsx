@@ -30,7 +30,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       title: 'Workouts',
       description: 'Squeeze in a quick workout',
       icon: Dumbbell,
-      color: 'bg-blue-500',
+      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
       textColor: 'text-blue-600',
       borderColor: 'border-blue-200'
     },
@@ -39,7 +39,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       title: 'Stretching',
       description: 'Short times to stretch and move',
       icon: Heart,
-      color: 'bg-amber-500',
+      color: 'bg-gradient-to-br from-amber-500 to-amber-600',
       textColor: 'text-amber-600',
       borderColor: 'border-amber-200'
     },
@@ -48,7 +48,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       title: 'Meditation',
       description: '5-min breathing and meditation breaks',
       icon: Brain,
-      color: 'bg-purple-500',
+      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
       textColor: 'text-purple-600',
       borderColor: 'border-purple-200'
     }
