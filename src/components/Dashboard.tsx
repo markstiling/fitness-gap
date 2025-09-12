@@ -204,7 +204,7 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
           <button
             onClick={autoScheduleActivities}
             disabled={loading}
-            className="bg-slate-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+            className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-3 animate-pulse hover:animate-none border-2 border-white/20 hover:border-white/40 before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-blue-600 before:via-purple-600 before:to-pink-600 before:blur-sm before:-z-10 before:opacity-75"
           >
             {loading ? (
               <>
@@ -213,8 +213,8 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
               </>
             ) : (
               <>
-                <Calendar className="w-5 h-5" />
-                Auto Schedule for the Month of {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                <Calendar className="w-6 h-6 drop-shadow-lg" />
+                <span className="drop-shadow-sm">Auto Schedule for the Month of {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </>
             )}
           </button>
