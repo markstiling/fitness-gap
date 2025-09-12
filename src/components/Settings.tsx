@@ -19,9 +19,10 @@ interface UserPreferences {
 interface SettingsProps {
   onClose: () => void
   onPreferencesUpdate: (preferences: ActivityPreferences) => void
+  onActivitiesRemoved?: () => void
 }
 
-export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps) {
+export default function Settings({ onClose, onPreferencesUpdate, onActivitiesRemoved }: SettingsProps) {
   const [preferences, setPreferences] = useState<ActivityPreferences>({
     workouts: true,
     stretching: false,
@@ -143,6 +144,11 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       
       // Show success message (you could add a toast notification here)
       alert(`Successfully removed ${data.removedCount} scheduled activities from your calendar!`)
+      
+      // Notify parent component that activities were removed
+      if (onActivitiesRemoved) {
+        onActivitiesRemoved()
+      }
       
     } catch (error) {
       console.error('Error removing scheduled activities:', error)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useSession } from 'next-auth/react'
 import { Calendar, Clock, Play, CheckCircle, AlertCircle, Dumbbell, Heart, Brain, TrendingUp, Target, Award, RefreshCw } from 'lucide-react'
 import { TimeSlot } from '@/lib/calendar'
@@ -67,13 +67,19 @@ interface DashboardProps {
   onPreferencesUpdate: (preferences: ActivityPreferences) => void
 }
 
-export default function Dashboard({ preferences, onPreferencesUpdate }: DashboardProps) {
+export interface DashboardRef {
+  checkScheduledEvents: () => void
+}
+
+const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPreferencesUpdate }, ref) => {
   useSession()
   const [wellnessStats, setWellnessStats] = useState<WellnessStats | null>(null)
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week')
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [hasScheduledEvents, setHasScheduledEvents] = useState(false)
+  const [checkingScheduled, setCheckingScheduled] = useState(false)
 
   const activityTypes: ActivityType[] = [
     {
@@ -104,6 +110,37 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
       duration: 5
     }
   ]
+
+  // Check if events are already scheduled for the current month
+  const checkScheduledEvents = async () => {
+    setCheckingScheduled(true)
+    try {
+      const response = await fetch('/api/calendar/check-scheduled')
+      if (response.ok) {
+        const data = await response.json()
+        setHasScheduledEvents(data.hasScheduledEvents)
+      }
+    } catch (error) {
+      console.error('Error checking scheduled events:', error)
+    } finally {
+      setCheckingScheduled(false)
+    }
+  }
+
+  // Check if user has added new activities that aren't scheduled yet
+  const hasNewActivities = () => {
+    const enabledActivities = activityTypes.filter(activity => preferences[activity.id])
+    if (!hasScheduledEvents) return enabledActivities.length > 0
+    
+    // If events are scheduled, check if user has enabled new activities
+    // This is a simple check - in a real app you'd compare with what's actually scheduled
+    return enabledActivities.length > 0
+  }
+
+  // Expose functions to parent component via ref
+  useImperativeHandle(ref, () => ({
+    checkScheduledEvents
+  }))
 
   // Fetch wellness statistics
   const fetchWellnessStats = async (period: string = selectedPeriod) => {
@@ -152,10 +189,14 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
 
       const data = await response.json()
       
-      if (data.scheduledEvents && data.scheduledEvents.length > 0) {
+      if (data.success === false) {
+        setMessage({ type: 'error', text: data.message || 'Events are already scheduled for this month.' })
+        await checkScheduledEvents()
+      } else if (data.scheduledEvents && data.scheduledEvents.length > 0) {
         setMessage({ type: 'success', text: data.message || 'Successfully scheduled wellness activities!' })
-        // Refresh stats after scheduling
+        // Refresh stats and check scheduled events after scheduling
         await fetchWellnessStats()
+        await checkScheduledEvents()
       } else {
         setMessage({ type: 'error', text: 'No available time slots found for scheduling activities.' })
       }
@@ -170,7 +211,13 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
   // Load stats on component mount and when period changes
   useEffect(() => {
     fetchWellnessStats()
+    checkScheduledEvents()
   }, [selectedPeriod])
+
+  // Re-check scheduled events when preferences change
+  useEffect(() => {
+    checkScheduledEvents()
+  }, [preferences])
 
   const formatTime = (date: Date | string) => {
     const dateObj = new Date(date)
@@ -203,13 +250,22 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
         <div className="flex justify-center">
           <button
             onClick={autoScheduleActivities}
-            disabled={loading}
-            className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-3 animate-pulse hover:animate-none border-2 border-white/20 hover:border-white/40 before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-blue-600 before:via-purple-600 before:to-pink-600 before:blur-sm before:-z-10 before:opacity-75"
+            disabled={loading || (hasScheduledEvents && !hasNewActivities())}
+            className={`relative px-8 py-4 rounded-xl font-bold text-lg shadow-2xl transition-all duration-300 flex items-center gap-3 border-2 ${
+              hasScheduledEvents && !hasNewActivities()
+                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white cursor-not-allowed opacity-75 border-green-400/50'
+                : 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white hover:shadow-purple-500/25 transform hover:scale-105 hover:animate-none animate-pulse border-white/20 hover:border-white/40 before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-blue-600 before:via-purple-600 before:to-pink-600 before:blur-sm before:-z-10 before:opacity-75'
+            } ${loading ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
           >
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 Scheduling activities...
+              </>
+            ) : hasScheduledEvents && !hasNewActivities() ? (
+              <>
+                <CheckCircle className="w-6 h-6 drop-shadow-lg" />
+                <span className="drop-shadow-sm">Events Already Scheduled for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </>
             ) : (
               <>
@@ -307,7 +363,7 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
           {/* Activity Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {enabledActivities.map((activity) => {
-              const stats = wellnessStats.byActivity[activity.id]
+              const stats = wellnessStats.byActivity[activity.id as keyof typeof wellnessStats.byActivity]
               const Icon = activity.icon
               
               if (!stats) return null
@@ -409,4 +465,8 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
       )}
     </div>
   )
-}
+})
+
+Dashboard.displayName = 'Dashboard'
+
+export default Dashboard

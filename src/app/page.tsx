@@ -1,9 +1,9 @@
 'use client'
 
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dumbbell, Settings, LogOut } from 'lucide-react'
-import Dashboard from '@/components/Dashboard'
+import Dashboard, { DashboardRef } from '@/components/Dashboard'
 import SettingsComponent from '@/components/Settings'
 import Onboarding from '@/components/Onboarding'
 
@@ -17,6 +17,7 @@ interface ActivityPreferences {
 
 export default function Home() {
   const { data: session, status } = useSession()
+  const dashboardRef = useRef<DashboardRef>(null)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [preferences, setPreferences] = useState<ActivityPreferences>({
@@ -246,9 +247,15 @@ export default function Home() {
           <SettingsComponent 
             onClose={() => setShowSettings(false)}
             onPreferencesUpdate={setPreferences}
+            onActivitiesRemoved={() => {
+              // Trigger a re-check of scheduled events in the Dashboard
+              if (dashboardRef.current && dashboardRef.current.checkScheduledEvents) {
+                dashboardRef.current.checkScheduledEvents()
+              }
+            }}
           />
         ) : (
-          <Dashboard preferences={preferences} onPreferencesUpdate={setPreferences} />
+          <Dashboard ref={dashboardRef} preferences={preferences} onPreferencesUpdate={setPreferences} />
         )}
       </main>
     </div>

@@ -49,6 +49,39 @@ export async function POST(request: Request) {
 
     const busyTimes = freeBusyResponse.data.calendars?.primary?.busy || []
     console.log('Existing busy times:', busyTimes.length, 'events')
+
+    // Get existing FitnessGap events to avoid duplicates
+    const eventsResponse = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin: now.toISOString(),
+      timeMax: endOfMonth.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+    })
+
+    const existingEvents = eventsResponse.data.items || []
+    const existingFitnessGapEvents = existingEvents.filter(event => {
+      const title = event.summary || ''
+      return title.includes('Workout Session') || 
+             title.includes('Stretching Break') || 
+             title.includes('Meditation Break')
+    })
+
+    console.log('Existing FitnessGap events:', existingFitnessGapEvents.length)
+    
+    // If we already have events scheduled, return early to prevent duplicates
+    if (existingFitnessGapEvents.length > 0) {
+      return NextResponse.json({ 
+        success: false,
+        message: 'Events are already scheduled for this month. Use the "Remove All Scheduled Activities" button in settings to clear them first.',
+        scheduledEvents: [],
+        schedulingResults: {
+          workouts: { scheduled: 0, failed: 0, days: [] },
+          stretching: { scheduled: 0, failed: 0, days: [] },
+          meditation: { scheduled: 0, failed: 0, days: [] }
+        }
+      })
+    }
     
     // Parse user's time preferences
     const [earliestHour, earliestMinute] = userPreferences.earliestWorkoutTime.split(':').map(Number)
