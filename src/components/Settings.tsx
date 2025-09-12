@@ -166,7 +166,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       title: 'Workouts',
       description: 'Squeeze in a quick workout',
       icon: Dumbbell,
-      color: 'bg-blue-500',
+      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
       textColor: 'text-blue-600',
       borderColor: 'border-blue-200'
     },
@@ -175,7 +175,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       title: 'Stretching',
       description: 'Short times to stretch and move',
       icon: Heart,
-      color: 'bg-amber-500',
+      color: 'bg-gradient-to-br from-amber-500 to-amber-600',
       textColor: 'text-amber-600',
       borderColor: 'border-amber-200'
     },
@@ -184,7 +184,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
       title: 'Meditation',
       description: '5-min breathing and meditation breaks',
       icon: Brain,
-      color: 'bg-purple-500',
+      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
       textColor: 'text-purple-600',
       borderColor: 'border-purple-200'
     }
@@ -333,7 +333,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                       onChange={(e) => setUserPreferences(prev => ({ ...prev, preferredWorkoutDuration: parseInt(e.target.value) }))}
                       className="mr-2"
                     />
-                    <span className="text-sm">15 minutes</span>
+                    <span className="text-sm text-gray-800">15 minutes</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -344,7 +344,7 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                       onChange={(e) => setUserPreferences(prev => ({ ...prev, preferredWorkoutDuration: parseInt(e.target.value) }))}
                       className="mr-2"
                     />
-                    <span className="text-sm">30 minutes</span>
+                    <span className="text-sm text-gray-800">30 minutes</span>
                   </label>
                 </div>
               </div>
@@ -417,11 +417,12 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
             <p className="text-gray-600 mb-4">
               Remove all wellness activities that were automatically scheduled by FitnessGap from your calendar.
             </p>
-            <button
-              onClick={removeAllScheduledActivities}
-              disabled={isRemovingActivities}
-              className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
+            <div className="flex justify-center">
+              <button
+                onClick={removeAllScheduledActivities}
+                disabled={isRemovingActivities}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
               {isRemovingActivities ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -435,7 +436,8 @@ export default function Settings({ onClose, onPreferencesUpdate }: SettingsProps
                   <span>Remove All Scheduled Activities</span>
                 </>
               )}
-            </button>
+              </button>
+            </div>
           </div>
 
           {/* Action Buttons */}

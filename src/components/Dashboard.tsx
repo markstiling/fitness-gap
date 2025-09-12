@@ -238,10 +238,6 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
         <div className="text-center py-12">
           <Calendar className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 mb-2">Ready to schedule your week</h3>
-          <p className="text-slate-600">
-            Click &quot;Auto-Schedule This Week&quot; to automatically schedule your wellness activities 
-            for the next 7 business days based on your preferences.
-          </p>
         </div>
       )}
     </div>
