@@ -198,6 +198,29 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
         </p>
       </div>
 
+      {/* Auto-Schedule Button */}
+      {enabledActivities.length > 0 && (
+        <div className="flex justify-center">
+          <button
+            onClick={autoScheduleActivities}
+            disabled={loading}
+            className="bg-slate-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                Scheduling activities...
+              </>
+            ) : (
+              <>
+                <Calendar className="w-5 h-5" />
+                Auto-Schedule This Week
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Period Selector */}
       <div className="flex justify-center">
         <div className="bg-white rounded-lg border border-gray-200 p-1 flex">
@@ -356,29 +379,6 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Auto-Schedule Button */}
-      {enabledActivities.length > 0 && (
-        <div className="flex justify-center">
-          <button
-            onClick={autoScheduleActivities}
-            disabled={loading}
-            className="bg-slate-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Scheduling activities...
-              </>
-            ) : (
-              <>
-                <Calendar className="w-5 h-5" />
-                Auto-Schedule This Week
-              </>
-            )}
-          </button>
         </div>
       )}
 
