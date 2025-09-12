@@ -29,14 +29,15 @@ export async function POST() {
     oauth2Client.setCredentials({ access_token: accessToken })
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
-    // Get events from the next 7 days
+    // Get events from the entire current month
     const now = new Date()
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
 
     const eventsResponse = await calendar.events.list({
       calendarId: 'primary',
-      timeMin: now.toISOString(),
-      timeMax: nextWeek.toISOString(),
+      timeMin: startOfMonth.toISOString(),
+      timeMax: endOfMonth.toISOString(),
       singleEvents: true,
       orderBy: 'startTime',
     })
