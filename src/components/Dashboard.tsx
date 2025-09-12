@@ -194,7 +194,7 @@ export default function Dashboard({ preferences, onPreferencesUpdate }: Dashboar
       <div className="text-center">
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Wellness Dashboard</h2>
         <p className="text-slate-600">
-          Track your wellness journey and stay on top of your health goals
+          Stay on top of your health goals during the busy work week!
         </p>
       </div>
 
