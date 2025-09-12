@@ -19,7 +19,6 @@ export async function POST(request: Request) {
     console.log('Auto-scheduling for user:', session.user.email)
     console.log('Activity preferences:', activityPreferences)
     console.log('User preferences:', userPreferences)
-    console.log('Existing busy times:', busyTimes.length, 'events')
 
     // Get the access token from the session
     const accessToken = (session as any).accessToken
@@ -49,6 +48,7 @@ export async function POST(request: Request) {
     })
 
     const busyTimes = freeBusyResponse.data.calendars?.primary?.busy || []
+    console.log('Existing busy times:', busyTimes.length, 'events')
     
     // Parse user's time preferences
     const [earliestHour, earliestMinute] = userPreferences.earliestWorkoutTime.split(':').map(Number)
