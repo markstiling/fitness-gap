@@ -33,6 +33,7 @@ export async function POST() {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    endOfMonth.setHours(23, 59, 59, 999) // End of the last day of the month
 
     const eventsResponse = await calendar.events.list({
       calendarId: 'primary',

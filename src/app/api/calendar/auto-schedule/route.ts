@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     // Get free/busy information from today until end of current month
     const now = new Date()
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Last day of current month
+    endOfMonth.setHours(23, 59, 59, 999) // End of the last day of the month
     
     const freeBusyResponse = await calendar.freebusy.query({
       resource: {
