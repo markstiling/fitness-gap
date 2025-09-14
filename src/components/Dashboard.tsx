@@ -127,13 +127,15 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
     }
   }
 
-  // Check if user has added new activities that aren't scheduled yet
-  const hasNewActivities = () => {
+  // Check if user has made changes to their activity preferences
+  const hasActivityChanges = () => {
     const enabledActivities = activityTypes.filter(activity => preferences[activity.id])
+    
+    // If no events are scheduled, allow scheduling if any activities are selected
     if (!hasScheduledEvents) return enabledActivities.length > 0
     
-    // If events are scheduled, check if user has enabled new activities
-    // This is a simple check - in a real app you'd compare with what's actually scheduled
+    // If events are scheduled, always allow re-scheduling to handle preference changes
+    // The smart scheduling API will handle adding/removing events as needed
     return enabledActivities.length > 0
   }
 
@@ -172,7 +174,7 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
         latestWorkoutTime: preferences.latestWorkoutTime
       }
       
-      const response = await fetch('/api/calendar/auto-schedule', {
+      const response = await fetch('/api/calendar/smart-schedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,15 +192,13 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
       const data = await response.json()
       
       if (data.success === false) {
-        setMessage({ type: 'error', text: data.message || 'Events are already scheduled for this month.' })
+        setMessage({ type: 'error', text: data.message || 'Failed to schedule activities.' })
         await checkScheduledEvents()
-      } else if (data.scheduledEvents && data.scheduledEvents.length > 0) {
-        setMessage({ type: 'success', text: data.message || 'Successfully scheduled wellness activities!' })
+      } else {
+        setMessage({ type: 'success', text: data.message || 'Successfully updated your wellness schedule!' })
         // Refresh stats and check scheduled events after scheduling
         await fetchWellnessStats()
         await checkScheduledEvents()
-      } else {
-        setMessage({ type: 'error', text: 'No available time slots found for scheduling activities.' })
       }
     } catch (error) {
       console.error('Error auto-scheduling activities:', error)
@@ -250,10 +250,10 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
         <div className="flex justify-center">
           <button
             onClick={autoScheduleActivities}
-            disabled={loading || (hasScheduledEvents && !hasNewActivities())}
+            disabled={loading || !hasActivityChanges()}
             className={`relative px-8 py-4 rounded-xl font-bold text-lg shadow-2xl transition-all duration-300 flex items-center gap-3 border-2 ${
-              hasScheduledEvents && !hasNewActivities()
-                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white cursor-not-allowed opacity-75 border-green-400/50'
+              !hasActivityChanges()
+                ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75 border-gray-300/50'
                 : 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white hover:shadow-purple-500/25 transform hover:scale-105 hover:animate-none animate-pulse border-white/20 hover:border-white/40 before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-blue-600 before:via-purple-600 before:to-pink-600 before:blur-sm before:-z-10 before:opacity-75'
             } ${loading ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
           >
@@ -262,15 +262,15 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 Scheduling activities...
               </>
-            ) : hasScheduledEvents && !hasNewActivities() ? (
+            ) : !hasActivityChanges() ? (
               <>
-                <CheckCircle className="w-6 h-6 drop-shadow-lg" />
-                <span className="drop-shadow-sm">Events Already Scheduled for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                <AlertCircle className="w-6 h-6 drop-shadow-lg" />
+                <span className="drop-shadow-sm">No Activities Selected</span>
               </>
             ) : (
               <>
                 <Calendar className="w-6 h-6 drop-shadow-lg" />
-                <span className="drop-shadow-sm">Auto Schedule for the Month of {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                <span className="drop-shadow-sm">Smart Schedule for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </>
             )}
           </button>
