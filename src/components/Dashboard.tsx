@@ -336,7 +336,10 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
           {/* Overall Progress */}
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold">Overall Progress</h3>
+              <div>
+                <h3 className="text-xl font-bold">Overall Progress</h3>
+                <p className="text-blue-100 text-sm">All Wellness Activities Combined</p>
+              </div>
               <div className="text-right">
                 <div className="text-3xl font-bold">{wellnessStats.completionRate}%</div>
                 <div className="text-blue-100">Completion Rate</div>
@@ -345,15 +348,15 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">{wellnessStats.total.scheduled}</div>
-                <div className="text-blue-100 text-sm">Scheduled</div>
+                <div className="text-blue-100 text-sm">Total Scheduled</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">{wellnessStats.total.completed}</div>
-                <div className="text-blue-100 text-sm">Completed</div>
+                <div className="text-blue-100 text-sm">Total Completed</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">{wellnessStats.total.upcoming}</div>
-                <div className="text-blue-100 text-sm">Upcoming</div>
+                <div className="text-blue-100 text-sm">Total Upcoming</div>
               </div>
             </div>
             <div className="mt-4">
@@ -362,6 +365,23 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
                   className="bg-white rounded-full h-2 transition-all duration-500"
                   style={{ width: `${wellnessStats.completionRate}%` }}
                 ></div>
+              </div>
+            </div>
+            {/* Activity Breakdown */}
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-lg font-semibold">{wellnessStats.byActivity.workouts.scheduled}</div>
+                  <div className="text-blue-100 text-xs">Workouts</div>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold">{wellnessStats.byActivity.stretching.scheduled}</div>
+                  <div className="text-blue-100 text-xs">Stretching</div>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold">{wellnessStats.byActivity.meditation.scheduled}</div>
+                  <div className="text-blue-100 text-xs">Meditation</div>
+                </div>
               </div>
             </div>
           </div>
