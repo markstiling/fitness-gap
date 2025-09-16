@@ -130,12 +130,47 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
   const hasActivityChanges = () => {
     const enabledActivities = activityTypes.filter(activity => preferences[activity.id])
     
-    // If no events are scheduled, allow scheduling if any activities are selected
-    if (!hasScheduledEvents) return enabledActivities.length > 0
+    // If no activities are selected, disable the button
+    if (enabledActivities.length === 0) return false
     
-    // If events are scheduled, always allow re-scheduling to handle preference changes
-    // The smart scheduling API will handle adding/removing events as needed
-    return enabledActivities.length > 0
+    // If no events are scheduled, allow scheduling if any activities are selected
+    if (!hasScheduledEvents) return true
+    
+    // If events are scheduled, check if we need to add/remove events based on current preferences
+    // This will be handled by the smart scheduling API, so allow re-scheduling
+    return true
+  }
+
+  // Check if all expected events are already scheduled for current preferences
+  const areAllEventsScheduled = () => {
+    if (!hasScheduledEvents || !wellnessStats) return false
+    
+    const enabledActivities = activityTypes.filter(activity => preferences[activity.id])
+    if (enabledActivities.length === 0) return false
+    
+    // Calculate expected events for the current month based on business days
+    const now = new Date()
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    endOfMonth.setHours(23, 59, 59, 999)
+    
+    let businessDays = 0
+    const currentDay = new Date(now)
+    while (currentDay <= endOfMonth) {
+      if (currentDay.getDay() >= 1 && currentDay.getDay() <= 5) { // Monday to Friday
+        businessDays++
+      }
+      currentDay.setDate(currentDay.getDate() + 1)
+    }
+    
+    // Calculate expected events based on preferences
+    let expectedEvents = 0
+    if (preferences.workouts) expectedEvents += businessDays // 1 workout per business day
+    if (preferences.stretching) expectedEvents += businessDays * 2 // 2 stretching per business day
+    if (preferences.meditation) expectedEvents += businessDays * 2 // 2 meditation per business day
+    
+    // Check if we have the expected number of events scheduled
+    const totalScheduled = wellnessStats.total.scheduled
+    return totalScheduled >= expectedEvents
   }
 
   // Expose functions to parent component via ref
@@ -246,9 +281,9 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
         <div className="flex justify-center">
           <button
             onClick={autoScheduleActivities}
-            disabled={loading || !hasActivityChanges()}
+            disabled={loading || !hasActivityChanges() || areAllEventsScheduled()}
             className={`relative px-8 py-4 rounded-xl font-bold text-lg shadow-2xl transition-all duration-300 flex items-center gap-3 border-2 ${
-              !hasActivityChanges()
+              !hasActivityChanges() || areAllEventsScheduled()
                 ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75 border-gray-300/50'
                 : 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white hover:shadow-purple-500/25 transform hover:scale-105 hover:animate-none animate-pulse border-white/20 hover:border-white/40 before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-blue-600 before:via-purple-600 before:to-pink-600 before:blur-sm before:-z-10 before:opacity-75'
             } ${loading ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
@@ -262,6 +297,11 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
               <>
                 <AlertCircle className="w-6 h-6 drop-shadow-lg" />
                 <span className="drop-shadow-sm">No Activities Selected</span>
+              </>
+            ) : areAllEventsScheduled() ? (
+              <>
+                <CheckCircle className="w-6 h-6 drop-shadow-lg" />
+                <span className="drop-shadow-sm">All Events Already Scheduled!</span>
               </>
             ) : (
               <>
