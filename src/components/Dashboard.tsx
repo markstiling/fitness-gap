@@ -431,7 +431,7 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600">Completed</span>
-                      <span className="font-semibold text-slate-800">{stats.completed}/{stats.scheduled}</span>
+                      <span className="text-slate-600">{stats.completed}/{stats.scheduled}</span>
                     </div>
                     <div className="bg-white/50 rounded-full h-2">
                       <div 
