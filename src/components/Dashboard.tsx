@@ -4,6 +4,7 @@ import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useSession } from 'next-auth/react'
 import { Calendar, Clock, Play, CheckCircle, AlertCircle, Dumbbell, Heart, Brain, TrendingUp, Target, Award } from 'lucide-react'
 import { TimeSlot } from '@/lib/calendar'
+import MiniCalendar from './MiniCalendar'
 
 interface ActivityPreferences {
   workouts: boolean
@@ -448,11 +449,16 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
             })}
           </div>
 
-          {/* Recent Events */}
-          {wellnessStats.events.length > 0 && (
+          {/* Mini Calendar - Week at a Glance */}
+          {wellnessStats.events.length > 0 && selectedPeriod === 'week' && (
+            <MiniCalendar events={wellnessStats.events} />
+          )}
+
+          {/* Recent Events - For Month and Year views */}
+          {wellnessStats.events.length > 0 && selectedPeriod !== 'week' && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                🕒 Recent {selectedPeriod === 'week' ? 'This Week' : selectedPeriod === 'month' ? 'This Month' : 'This Year'}
+                🕒 Recent {selectedPeriod === 'month' ? 'This Month' : 'This Year'}
               </h3>
               <div className="space-y-3">
                 {wellnessStats.events.slice(0, 5).map((event) => {
