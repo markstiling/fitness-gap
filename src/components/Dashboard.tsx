@@ -337,7 +337,7 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-xl font-bold">Overall Progress</h3>
+                <h3 className="text-xl font-bold">Overall Progress {selectedPeriod === 'week' ? 'This Week' : selectedPeriod === 'month' ? 'This Month' : 'This Year'}</h3>
                 <p className="text-blue-100 text-sm">All Wellness Activities Combined</p>
               </div>
               <div className="text-right">
