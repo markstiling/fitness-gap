@@ -293,26 +293,6 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
       {/* Wellness Stats */}
       {wellnessStats && (
         <div className="space-y-6">
-          {/* Period Selector Dropdown */}
-          <div className="flex justify-center">
-            <div className="relative">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value as 'week' | 'month' | 'year')}
-                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-slate-700 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              >
-                <option value="week">📅 This Week</option>
-                <option value="month">📆 This Month</option>
-                <option value="year">🗓️ This Year</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
           {/* Overall Progress */}
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
@@ -342,6 +322,26 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
                   className="bg-white rounded-full h-2 transition-all duration-500"
                   style={{ width: `${wellnessStats.completionRate}%` }}
                 ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Period Selector Dropdown */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value as 'week' | 'month' | 'year')}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-6 py-3 pr-10 text-base font-medium text-slate-700 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors shadow-sm"
+              >
+                <option value="week">📅 This Week</option>
+                <option value="month">📆 This Month</option>
+                <option value="year">🗓️ This Year</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             </div>
           </div>
