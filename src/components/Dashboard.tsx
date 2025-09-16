@@ -266,7 +266,7 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
             ) : (
               <>
                 <Calendar className="w-6 h-6 drop-shadow-lg" />
-                <span className="drop-shadow-sm">Smart Schedule for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                <span className="drop-shadow-sm">Click here to smart schedule this month!</span>
               </>
             )}
           </button>
