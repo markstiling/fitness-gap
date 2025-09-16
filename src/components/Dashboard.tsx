@@ -277,35 +277,55 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
         </div>
       )}
 
-      {/* Period Selector */}
-      <div className="flex justify-center">
-        <div className="bg-white rounded-lg border border-gray-200 p-1 flex">
-          {(['week', 'month', 'year'] as const).map((period) => (
-            <button
-              key={period}
-              onClick={() => setSelectedPeriod(period)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedPeriod === period
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {period.charAt(0).toUpperCase() + period.slice(1)}
-            </button>
-          ))}
+      {/* Statistics View Controls */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">📊 View Your Progress</h3>
+          <p className="text-sm text-slate-600">
+            Select a time period to see your wellness statistics and track your progress
+          </p>
         </div>
-      </div>
+        
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Period Selector */}
+          <div className="flex bg-slate-50 rounded-lg p-1">
+            {(['week', 'month', 'year'] as const).map((period) => (
+              <button
+                key={period}
+                onClick={() => setSelectedPeriod(period)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  selectedPeriod === period
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                {period === 'week' && '📅'} {period === 'month' && '📆'} {period === 'year' && '🗓️'} {' '}
+                {period.charAt(0).toUpperCase() + period.slice(1)}
+              </button>
+            ))}
+          </div>
 
-      {/* Refresh Button */}
-      <div className="flex justify-center">
-        <button
-          onClick={() => fetchWellnessStats()}
-          disabled={refreshing}
-          className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh Stats'}
-        </button>
+          {/* Refresh Button */}
+          <button
+            onClick={() => fetchWellnessStats()}
+            disabled={refreshing}
+            className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
+        
+        {/* Current Period Info */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-slate-500">
+            Currently viewing: <span className="font-medium text-slate-700">
+              {selectedPeriod === 'week' && 'This week\'s wellness activities'}
+              {selectedPeriod === 'month' && 'This month\'s wellness activities'}
+              {selectedPeriod === 'year' && 'This year\'s wellness activities'}
+            </span>
+          </p>
+        </div>
       </div>
 
       {/* Message */}
@@ -327,6 +347,18 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
       {/* Wellness Stats */}
       {wellnessStats && (
         <div className="space-y-6">
+          {/* Section Header */}
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              📈 Your {selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)}ly Progress
+            </h2>
+            <p className="text-slate-600">
+              {selectedPeriod === 'week' && 'Track your wellness activities for this week'}
+              {selectedPeriod === 'month' && 'Monitor your wellness journey throughout this month'}
+              {selectedPeriod === 'year' && 'Review your wellness achievements for this year'}
+            </p>
+          </div>
+
           {/* Overall Progress */}
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white">
             <div className="flex items-center justify-between mb-4">
@@ -405,7 +437,9 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
           {/* Recent Events */}
           {wellnessStats.events.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activities</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                🕒 Recent {selectedPeriod === 'week' ? 'This Week' : selectedPeriod === 'month' ? 'This Month' : 'This Year'}
+              </h3>
               <div className="space-y-3">
                 {wellnessStats.events.slice(0, 5).map((event) => {
                   // Map API event types to activity types
