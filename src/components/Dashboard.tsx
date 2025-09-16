@@ -2,7 +2,7 @@
 
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useSession } from 'next-auth/react'
-import { Calendar, Clock, Play, CheckCircle, AlertCircle, Dumbbell, Heart, Brain, TrendingUp, Target, Award, RefreshCw } from 'lucide-react'
+import { Calendar, Clock, Play, CheckCircle, AlertCircle, Dumbbell, Heart, Brain, TrendingUp, Target, Award } from 'lucide-react'
 import { TimeSlot } from '@/lib/calendar'
 
 interface ActivityPreferences {
@@ -75,7 +75,6 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
   useSession()
   const [wellnessStats, setWellnessStats] = useState<WellnessStats | null>(null)
   const [loading, setLoading] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week')
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [hasScheduledEvents, setHasScheduledEvents] = useState(false)
@@ -146,7 +145,6 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
 
   // Fetch wellness statistics
   const fetchWellnessStats = async (period: string = selectedPeriod) => {
-    setRefreshing(true)
     try {
       const response = await fetch(`/api/calendar/wellness-stats?period=${period}`)
       if (!response.ok) {
@@ -157,8 +155,6 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
     } catch (error) {
       console.error('Error fetching wellness stats:', error)
       setMessage({ type: 'error', text: 'Failed to load wellness statistics' })
-    } finally {
-      setRefreshing(false)
     }
   }
 
@@ -277,56 +273,6 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
         </div>
       )}
 
-      {/* Statistics View Controls */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">📊 View Your Progress</h3>
-          <p className="text-sm text-slate-600">
-            Select a time period to see your wellness statistics and track your progress
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          {/* Period Selector */}
-          <div className="flex bg-slate-50 rounded-lg p-1">
-            {(['week', 'month', 'year'] as const).map((period) => (
-              <button
-                key={period}
-                onClick={() => setSelectedPeriod(period)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  selectedPeriod === period
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-                }`}
-              >
-                {period === 'week' && '📅'} {period === 'month' && '📆'} {period === 'year' && '🗓️'} {' '}
-                {period.charAt(0).toUpperCase() + period.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {/* Refresh Button */}
-          <button
-            onClick={() => fetchWellnessStats()}
-            disabled={refreshing}
-            className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-medium hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
-        </div>
-        
-        {/* Current Period Info */}
-        <div className="mt-4 text-center">
-          <p className="text-xs text-slate-500">
-            Currently viewing: <span className="font-medium text-slate-700">
-              {selectedPeriod === 'week' && 'This week\'s wellness activities'}
-              {selectedPeriod === 'month' && 'This month\'s wellness activities'}
-              {selectedPeriod === 'year' && 'This year\'s wellness activities'}
-            </span>
-          </p>
-        </div>
-      </div>
 
       {/* Message */}
       {message && (
@@ -347,16 +293,24 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
       {/* Wellness Stats */}
       {wellnessStats && (
         <div className="space-y-6">
-          {/* Section Header */}
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
-              📈 Your {selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)}ly Progress
-            </h2>
-            <p className="text-slate-600">
-              {selectedPeriod === 'week' && 'Track your wellness activities for this week'}
-              {selectedPeriod === 'month' && 'Monitor your wellness journey throughout this month'}
-              {selectedPeriod === 'year' && 'Review your wellness achievements for this year'}
-            </p>
+          {/* Period Selector Dropdown */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value as 'week' | 'month' | 'year')}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-slate-700 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              >
+                <option value="week">📅 This Week</option>
+                <option value="month">📆 This Month</option>
+                <option value="year">🗓️ This Year</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Overall Progress */}
@@ -491,7 +445,7 @@ const Dashboard = forwardRef<DashboardRef, DashboardProps>(({ preferences, onPre
       )}
 
       {/* Loading State */}
-      {!wellnessStats && !refreshing && (
+      {!wellnessStats && (
         <div className="text-center py-12">
           <TrendingUp className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 mb-2">Loading your wellness data...</h3>
